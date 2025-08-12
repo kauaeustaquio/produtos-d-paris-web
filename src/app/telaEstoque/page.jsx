@@ -5,7 +5,15 @@ export default async function ProdutosdParis() {
 
   return (
    <>
-   <h1>Estoque</h1>
+   <h1>Gerenciar estoque</h1>
+   <a href="telaPrincipal" type="button" className="botao">Voltar</a>
+   
+  <form method="post">
+        <input type="text" className="caixa-de-pesquisa" name="busca" placeholder="Pesquisar..."></input>
+   </form> 
+   {/* Caixa de texto */}
+
    </>
+
   );
 }

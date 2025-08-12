@@ -17,7 +17,6 @@ export default async function ProdutosdParis() {
           <h1>Produtos d'Paris</h1>
           <a href="telaPedidos" type="button" className="botao"> Pedidos</a>
           <a href="telaEstoque" type="button" className="botao"> Estoque</a>
-          <a href="telaEstoque" type="button" className="botao"> Categoria</a>
 
           <h3>Limpeza de Piscina</h3>
       </div>
