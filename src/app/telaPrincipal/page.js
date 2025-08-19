@@ -11,14 +11,15 @@ export default async function ProdutosdParis() {
           
   
       <div>
-          <a href="telaInfo" type="button" className="botao"> 
+            <a href="telaInfo" type="button" className="botao"> 
              <img src="/img/info.png"/>
           </a>
           <h1>Produtos d'Paris</h1>
-          <a href="telaPedidos" type="button" className="botao"> Pedidos</a>
-          <a href="telaEstoque" type="button" className="botao"> Estoque</a>
+            <a href="telaPedidos" type="button" className="botao"> Pedidos</a>
+            <a href="telaEstoque" type="button" className="botao"> Estoque</a>
 
           <h3>Limpeza de Piscina</h3>
+            
       </div>
    </>
   );
