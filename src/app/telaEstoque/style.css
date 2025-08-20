@@ -1,0 +1,211 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
+
+/* --- Estilos Globais e Reset --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #f0f2f5;
+  color: #333;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-size: 1rem;
+}
+
+/* --- Container Principal --- */
+.stock-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+.stock-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  color: #555;
+}
+
+.stock-header h1 {
+  font-size: 2rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* --- Barra de Controles (apenas o botão "Novo produto") --- */
+.controls-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 900px;
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.new-product-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Centraliza verticalmente */
+  gap: 0.25rem;
+  width: 323px; /* Largura */
+  height: 90px; /* Altura */
+  border-radius: 20px; /* Raio da borda */
+  background-color: #e0e0e0;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.new-product-btn .btn-text {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+  color: rgb(173, 173, 173);
+  font-size: 24px; /* Tamanho do texto */
+}
+
+.new-product-btn:hover {
+  background-color: #d0d0d0;
+}
+
+/* --- Popup / Modal --- */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  position: relative;
+  display: flex;
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 700px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  gap: 2rem;
+}
+
+.close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.popup-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  border: 1px dashed #ddd;
+}
+
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.upload-label input[type="file"] {
+  display: none;
+}
+
+.upload-label span {
+  margin-top: 0.5rem;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.popup-right {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.popup-right label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #555;
+}
+
+.popup-right input,
+.popup-right select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #f7f7f7;
+  outline: none;
+  color: #333;
+}
+
+.popup-right select {
+  color: #bbb;
+}
+
+.popup-right select option {
+  color: #333;
+}
+
+.popup-right input::placeholder,
+.popup-right select::placeholder {
+  color: #bbb;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 1rem;
+  margin-top: 1rem;
+  border: none;
+  border-radius: 12px;
+  background-color: #e0e0e0;
+  color: #888;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: not-allowed;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.submit-btn.enabled {
+  background-color: #333;
+  color: #fff;
+  cursor: pointer;
+}
+
+.submit-btn.enabled:hover {
+  background-color: #555;
+}
