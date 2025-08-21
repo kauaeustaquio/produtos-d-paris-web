@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Sansation:wght@300&display=swap');
 
 :root {
-  --background: #ffffff;
+  --background: #F7F7F7;
   --foreground: #000;
 }
 
@@ -11,7 +11,7 @@ body {
   overflow-x: hidden;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2 {
   font-family: "Sansation", sans-serif;
   font-weight: 300;
 }
