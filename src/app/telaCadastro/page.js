@@ -1,75 +1,143 @@
-import db from "@/lib/db";
+"use client";
 
-export default async function ProdutosdParis() {
-  const usuario = await db.query("select * from usuario");
+import { useState } from 'react';
+// Importe os ícones de olho aberto e fechado
+import { User, Mail, Eye, EyeOff } from 'lucide-react';
+import "./style.css";
 
-return (
+export default function ProdutosdParis() {
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [confirmaSenha, setConfirmaSenha] = useState('');
+  // Adiciona o estado para controlar a visibilidade da senha
+  const [showPassword, setShowPassword] = useState(false); 
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (senha !== confirmaSenha) {
+      alert('As senhas não coincidem!');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/usuario', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ nome, email, senha }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(data.message);
+        setNome('');
+        setEmail('');
+        setSenha('');
+        setConfirmaSenha('');
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error('Erro na requisição:', error);
+      alert('Erro ao tentar cadastrar. Tente novamente.');
+    }
+  };
+
+  // Função para alternar a visibilidade da senha
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  return (
     <>
-      {/* Link para a fonte Urbanist no Google Fonts */}
-    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Sansation:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
 
-    {/* Centralizando a caixa de cadastro*/}
-    <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',  // 100% da altura da tela
-        backgroundColor: '#000',  // Fundo preto
-        margin: 0
-    }}>
-    <div style={{
-        width: '400px',  // Caixa mais fina (ajustado de 490px para 400px)
-        height: '400px',
-        backgroundColor: '#ffffff',
-        borderRadius: '50px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-        padding: '20px',
-    }}>
-    {/* Aplicando a fonte Urbanist ao título */}
-        <h2 style={{
-        textAlign: 'center',
-        fontSize: '24px',
-        color: '#333',
-        fontFamily: 'Urbanist, sans-serif',
-        }}>
-        Cadastre-se
-        </h2>
-        <form method="post" style={{ width: '100%' }}>
-        <div style={{ marginBottom: '15px' }}>
-            <label htmlFor="nome" style={{ color: 'black' }}>Nome:</label>
-            <input type="text" id="nome" style={{ width: '100%', padding: '10px', borderRadius: '25px', border: '1px solid #ccc' }} />
+      <div className="container">
+        <div className="card">
+          <h2 className="titulo">Cadastre-se</h2>
+          <div className="divider"></div>
+          <form onSubmit={handleSubmit} className="formulario">
+            <div className="form-group">
+              <label htmlFor="nome" className="label-com-asterisco">Nome *</label>
+              <div className="input-icon-container">
+                <input
+                  type="text"
+                  id="nome"
+                  className="input-field"
+                  placeholder="Maria da Silva..."
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  required
+                />
+                <span className="input-icon"><User size={25} color="#000" /></span>
+              </div>
+            </div>
+            <div className="form-group">
+              <label htmlFor="email" className="label-com-asterisco">Email *</label>
+              <div className="input-icon-container">
+                <input
+                  type="email"
+                  id="email"
+                  className="input-field"
+                  placeholder="maria.silva@gmail.com..."
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <span className="input-icon"><Mail size={25} color="#000" /></span>
+              </div>
+            </div>
+            <div className="form-group">
+              <label htmlFor="senha" className="label-com-asterisco">Senha* (mínimo de 6 caracteres)</label>
+              <div className="input-icon-container">
+                <input
+                  // Altera o tipo do input com base no estado
+                  type={showPassword ? "text" : "password"}
+                  id="senha"
+                  className="input-field"
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  required
+                />
+                {/* Adiciona o evento onClick no ícone */}
+                <span className="input-icon" onClick={togglePasswordVisibility}>
+                  {/* Altera o ícone com base no estado */}
+                  {showPassword ? <EyeOff size={25} color="#000" /> : <Eye size={25} color="#000" />}
+                </span>
+              </div>
+            </div>
+            <div className="form-group">
+              <label htmlFor="confirmaSenha" className="label-com-asterisco">Insira a senha novamente*</label>
+              <div className="input-icon-container">
+                <input
+                  // Altera o tipo do input com base no estado
+                  type={showPassword ? "text" : "password"}
+                  id="confirmaSenha"
+                  className="input-field"
+                  value={confirmaSenha}
+                  onChange={(e) => setConfirmaSenha(e.target.value)}
+                  required
+                />
+                {/* Adiciona o evento onClick no ícone */}
+                <span className="input-icon" onClick={togglePasswordVisibility}>
+                  {/* Altera o ícone com base no estado */}
+                  {showPassword ? <EyeOff size={25} color="#000" /> : <Eye size={25} color="#000" />}
+                </span>
+              </div>
+            </div>
+            <div className="button-group">
+              <button type="submit" className="button">Cadastrar</button>
+            </div>
+          </form>
+          <div className="login-link">
+            <span>Já tem uma conta?</span> <a href="/login">Faça login</a>
+          </div>
         </div>
-        <div style={{ marginBottom: '15px' }}>
-            <label htmlFor="email" style={{ color: 'black' }}>Email:</label>
-            <input type="email" id="email" style={{ width: '100%', padding: '10px', borderRadius: '25px', border: '1px solid #ccc' }} />
-        </div>
-        <div style={{ marginBottom: '15px' }}>
-            <label htmlFor="senha" style={{ color: 'black' }}>Senha:</label>
-            <input type="password" id="senha" style={{ width: '100%', padding: '10px', borderRadius: '25px', border: '1px solid #ccc' }} />
-        </div>
-        <div style={{ marginBottom: '15px' }}>
-            <label htmlFor="confirmaSenha" style={{ color: 'black' }}>Insira a senha novamente:</label>
-            <input type="password" id="confirmaSenha" style={{ width: '100%', padding: '10px', borderRadius: '25px', border: '1px solid #ccc' }} />
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <button type="submit" style={{
-            padding: '12px 20px',
-            borderRadius: '25px',
-            backgroundColor: '#4CAF50',
-            color: '#fff',
-            border: 'none',
-            fontSize: '16px',
-            cursor: 'pointer',
-            transition: 'background-color 0.3s ease',
-            }}>Cadastrar</button>
-        </div>
-        </form>
-    </div>
-    </div>
-</>
-);
+      </div>
+    </>
+  );
 }

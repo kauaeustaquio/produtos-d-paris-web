@@ -54,7 +54,7 @@ export default function TelaEstoque() {
       <div className="top-bar">
         <a href="telaInfo" className="info-icon">
           {/* Altere para uma imagem de ícone branco, por exemplo, info-branco.png */}
-          <img src="/img/info-branco.png" alt="Informações" /> 
+          <img src="/img/info-botao.png" alt="Informações" /> 
         </a>
       </div>
       
