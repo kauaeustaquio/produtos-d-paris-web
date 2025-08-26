@@ -1,42 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
+/* Importação de fontes */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
 
 /* --- Estilos Globais e Reset --- */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
-
-/* Container da barra superior (cinza) */
-.top-bar {
-  width: 100%;
-  height: 3.125rem; /* 50px = 3.125rem */
-  background-color: #000000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 1.25rem; /* 20px = 1.25rem */
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1000;
-}
-
-/* Container principal que vai abaixo da barra fixa */
-.main-content {
-  /* Adiciona o espaço para o conteúdo não ficar por trás da barra fixa */
-  padding-top: 3.125rem; 
-}
-
-/* Ícone de informação */
-.info-icon {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-}
-
-.info-icon img {
-  height: 40px; /* 30px = 1.875rem */
+  font-family: 'Roboto', sans-serif;
 }
 
 body {
@@ -51,42 +23,173 @@ button {
   font-size: 1rem;
 }
 
+/* --- Container da barra superior (preta) --- */
+.top-bar {
+  width: 100%;
+  height: 3.125rem; /* 50px */
+  background-color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem; /* 24px */
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.back-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-right: 20px;
+}
+
+.info-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-left: 20px;
+}
+
+.header-text {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.icon-text-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-text-container img {
+  width: 30px;
+  height: 30px;
+}
+
+.icon-text-container span {
+  font-family: 'Urbanist', sans-serif;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+
 /* --- Container Principal --- */
+.main-content {
+  padding-top: 5rem; 
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
 .stock-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 2rem;
-  min-height: 100vh;
 }
 
+/* Estilo do cabeçalho da seção de estoque */
 .stock-header {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Alinha os itens na vertical */
   align-items: center;
-  gap: 0.5rem;
+  gap: 10px; /* Espaço entre a imagem e o texto */
   margin-bottom: 2rem;
   color: #555;
+  text-align: center;
 }
 
 .stock-header h1 {
+  font-family: 'Inter', sans-serif;
   font-size: 2rem;
   font-weight: 500;
   margin: 0;
+  color: #333;
 }
 
-/* --- Barra de Controles (apenas o botão "Novo produto") --- */
+/* --- Barra de Controles --- */
 .controls-bar {
   display: flex;
-  justify-content: center;
   align-items: center;
-  width: 100%;
-  max-width: 900px;
+  /* Espaçamento entre os elementos */
+  gap: 1rem;
+  /* Dimensões do card de controle */
+  width: 1195px; /* Largura ajustada */
+  height: 109px; /* Altura ajustada */
   background-color: #fff;
-  padding: 1rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px; /* Raio de borda ajustado */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   margin-bottom: 2rem;
+  /* Alinha os itens nas extremidades, empurrando-os para as laterais */
+  justify-content: space-between; 
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  background-color: #F7F7F7;
+  border-radius: 10px; /* Raio de borda ajustado */
+  padding: 0.5rem 1rem;
+  width: 237px; /* Largura fixa para o campo de pesquisa */
+  height: 58px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0; /* Impede que o item encolha */
+}
+
+.search-input {
+  border: none;
+  background: none;
+  outline: none;
+  flex-grow: 1;
+  padding-left: 10px;
+  color: #000;
+}
+
+.stats-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #888;
+  height: 100%;
+  padding: 0 1rem;
+  border-left: 1px solid #ddd;
+}
+
+.stats-container span {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.filter-link, .categories-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-decoration: none;
+  color: #555;
+}
+
+.filter-link img, .categories-link img {
+  width: 35px;
+  height: 35px;
+  filter: invert(40%) sepia(0%) saturate(1%) hue-rotate(248deg) brightness(98%) contrast(92%);
+}
+
+.filter-link span, .categories-link span {
+  font-size: 0.7rem;
+  font-weight: 500;
 }
 
 .new-product-btn {
@@ -95,9 +198,9 @@ button {
   align-items: center;
   justify-content: center;
   gap: 0.25rem;
-  width: 323px;
-  height: 90px;
-  border-radius: 20px;
+  width: 323px; /* Largura ajustada */
+  height: 90px; /* Altura ajustada */
+  border-radius: 20px; /* Raio de borda ajustado */
   background-color: #e0e0e0;
   border: none;
   cursor: pointer;
@@ -115,7 +218,121 @@ button {
   background-color: #d0d0d0;
 }
 
-/* --- Popup / Modal --- */
+
+/* --- Tabela de Produtos --- */
+/* Remove o estilo de card branco para a tabela, apenas mantém a estrutura interna */
+.product-table-container {
+  width: 100%;
+  max-width: 900px;
+  padding: 1rem;
+}
+
+.product-table-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0 1rem 0.5rem 1rem;
+  color: #555;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border-bottom: 2px solid #ddd;
+}
+
+.product-table-header span {
+  flex: 1;
+  text-align: left; /* Adicionado para alinhar os títulos à esquerda */
+}
+
+/* Ajuste das larguras das colunas para alinhar com os itens da lista */
+.col-checkbox { flex: 0 0 50px; }
+.col-produto { flex: 2; }
+.col-categoria { flex: 1; }
+.col-quantidade { flex: 1; }
+.col-valor { flex: 1; }
+.col-actions { flex: 0 0 80px; text-align: right;}
+
+/* Estilos para a lista de produtos (corpo da tabela) */
+.product-list {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+}
+
+.product-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.product-item:last-child {
+  border-bottom: none;
+}
+
+.product-checkbox {
+  flex: 0 0 50px;
+}
+
+.product-details-group {
+  display: flex;
+  align-items: center;
+  flex: 2;
+  gap: 10px;
+}
+
+.product-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.product-details-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-details-text h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Reajuste dos flex e alinhamento do texto para alinhamento correto */
+.col-categoria-item,
+.col-quantidade-item,
+.col-valor-item {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #555;
+  font-weight: 500;
+  text-align: left; /* Alinhado para a esquerda para justificar o texto */
+}
+
+.product-actions {
+  flex: 0 0 80px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  padding: 5px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.action-btn:hover {
+  background-color: #eee;
+}
+
+.no-products-message {
+  text-align: center;
+  padding: 2rem;
+  color: #888;
+}
+
+/* --- Pop-up de Adicionar Produto (estilos já fornecidos) --- */
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -240,4 +457,63 @@ button {
 
 .submit-btn.enabled:hover {
   background-color: #555;
+}
+
+/* Container para o link de filtro e o pop-up */
+.filter-container {
+    position: relative;
+    z-index: 1000; /* Garante que o pop-up fique acima de outros elementos */
+}
+
+/* O pop-up de filtro posicionado de forma absoluta */
+.filter-popup-content-positioned {
+    position: absolute;
+    top: calc(100% + 10px); /* Posiciona mais para baixo, com margem */
+    left: 50%;
+    transform: translateX(-50%);
+    
+    background-color: #F7F7F7;
+    padding: 2rem;
+    border-radius: 20px;
+    min-width: 354px; /* Largura mínima ajustada para caber o conteúdo */
+    max-width: 500px;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45); /* Sombra aumentada */
+    text-align: center;
+}
+
+/* --- Estilos dos botões de filtro --- */
+.filter-button-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.filter-btn {
+    background-color: #E0E0E0;
+    color: #888;
+    padding: 1rem;
+    border-radius: 10px;
+    font-weight: bold;
+    transition: background-color 0.2s, color 0.2s;
+    text-align: center;
+}
+
+.filter-btn:hover {
+    background-color: #D0D0D0;
+}
+
+.filter-btn.active {
+    background-color: #333;
+    color: #fff;
+}
+
+.filter-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: #888;
 }

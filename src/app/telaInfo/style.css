@@ -1,3 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Sansation:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500&display=swap'); 
+
 /* Estilizando a barra superior */
 .top-bar {
   width: 100%;
@@ -5,98 +10,243 @@
   background-color: #000000;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0 1.25rem; /* 20px */
+  justify-content: flex-start;
+  padding: 0 1.25rem;
   position: fixed;
   top: 0;
   left: 0;
   z-index: 1000;
 }
 
-/* Estilizando o título dentro da barra superior */
-.top-bar-title {
-  color: #fff;
-  font-size: 1.5rem;
-  font-weight: 600;
+/* O link do ícone de home pode ser posicionado dentro do .top-bar */
+.home-icon-link {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.home-icon-img {
+  width: 40px;
+  height: 40px;
+}
+
+/* Estilizando o container principal da página */
+.container-sobre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 5rem;
+  min-height: 100vh;
   font-family: 'Urbanist', sans-serif;
-  margin: 0;
-  /* Garante que o título esteja centralizado na barra */
+  color: #000000;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Estilizando o novo container para a logo e os títulos */
+.header-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+/* Estilizando o título "SOBRE A LOJA" */
+.titulo-secao {
+  font-family: 'Sansation', sans-serif;
+  font-weight: 400;
+  font-size: 1.5rem;
+  color: #000000;
+  margin-bottom: 1.5rem;
+}
+
+/* Estilos para o nome "PRODUTOS D' PARIS" */
+.titulo-principal {
+  font-family: 'Cormorant SC', serif;
+  font-weight: 300;
+  font-size: 2rem;
+  color: #000000;
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+/* Texto justificado à esquerda */
+.texto-sobre {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 300 !important;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 20px 0;
+  color: #000000;
+  text-align: left;
+  padding: 0 40px;
+}
+
+/* Estilos para as seções de informações */
+.informacoes {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 30px;
+  width: 100%;
+}
+
+.secao {
+  flex: 1;
+  margin: 0 15px;
+  text-align: left;
+}
+
+/* Aplica a fonte Outfit para os subtítulos */
+.subtitulo {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 500; /* Peso da fonte para Medium */
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Aplica a fonte Roboto Mono para os parágrafos de informações */
+.secao p {
+  margin: 5px 0;
+  color: #000000;
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 300; /* Peso da fonte para Light */
+}
+
+.logo-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+/* Estilos para o ícone de edição */
+.edit-icon-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.edit-icon {
+  width: 40px; /* Tamanho da imagem */
+  height: 40px;
+  z-index: 200;
+}
+
+/* Estilos do pop-up */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.popup-container {
+  width: 320px; /* Largura definida */
+  height: 450px; /* Altura definida */
+  background-color: #F7F7F7; /* Cor de fundo F7F7F7 */
+  border-radius: 40px; /* Raio da borda de 40px */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box; /* Para que o padding não afete as dimensões */
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 2001;
+}
+
+.upload-box {
+  width: 230px; /* Largura definida */
+  height: 320px; /* Altura definida */
+  background-color: #D9D9D9; /* Cor de fundo D9D9D9 */
+  border-radius: 20px; /* Raio da borda de 20px */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  padding: 0; /* Remove o padding para respeitar a altura e largura exatas */
+}
+
+.upload-box p {
+  margin-top: 10px;
+  color: #000;
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 300;
+}
+
+/* Estilos para o pop-up de confirmação */
+.confirmation-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
 }
 
-/* Estilizando o contêiner principal da página "Sobre" */
-.container-sobre {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    /* Adiciona um padding no topo para o conteúdo não ficar por baixo da barra superior */
-    padding-top: 3.125rem; 
-    height: 100vh;
-    background-color: #f0f0f0;
-    font-family: 'Urbanist', sans-serif;
-    color: #444;
+.confirmation-content h3 {
+  font-family: 'Urbanist', sans-serif;
+  font-weight: 500;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
 }
 
-/* Estilizando o card da página "Sobre" */
-.card-sobre {
-    width: 800px;
-    background-color: #fff;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    padding: 40px;
-    text-align: center;
+.button-group {
+  display: flex;
+  gap: 20px;
 }
 
-/* Estilizando o título "Sobre a Loja" */
-.titulo-sobre {
-    font-weight: 600;
-    font-size: 2rem;
-    margin-bottom: 20px;
-    text-transform: uppercase;
+.confirm-button,
+.cancel-button {
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: none;
+  font-family: 'Urbanist', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
 }
 
-/* Estilizando o texto de descrição */
-.texto-sobre {
-    font-size: 1rem;
-    line-height: 1.6;
-    margin: 20px 0;
-    color: #666;
+.confirm-button {
+  background-color: #4CAF50; /* Verde */
+  color: white;
 }
 
-.home-icon-container {
-    position: absolute;
-    left: 1.25rem; /* 20px */
-    cursor: pointer;
+.cancel-button {
+  background-color: #f44336; /* Vermelho */
+  color: white;
 }
 
-/* Estilizando a imagem do ícone de casa */
-.home-icon-img {
-    width: 40px;
-    height: 40px;
-}
-
-/* Estilizando as seções de informação */
-.informacoes {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 30px;
-}
-
-/* Estilizando cada seção (Localização e Contato) */
-.secao {
-    flex: 1;
-    margin: 0 15px;
-}
-
-/* Estilizando os subtítulos */
-.subtitulo {
-    font-weight: bold;
-    font-size: 1.2rem;
-    margin-bottom: 10px;
-    color: #333;
-}
-
-.secao p {
-    margin: 5px 0;
-    color: #777;
+/* Ajustes no upload-box para funcionar com o label */
+.upload-box {
+  cursor: pointer;
 }

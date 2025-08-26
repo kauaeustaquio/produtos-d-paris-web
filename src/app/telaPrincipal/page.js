@@ -5,7 +5,7 @@ export default async function ProdutosdParis() {
   const usuario = await db.query("select * from usuario");
   return (
     <>
-      {/* 1. Este é o container da barra superior cinza, que será fixo */}
+      {/* container da barra superior cinza, que será fixo */}
       <div className="top-bar">
         <form method="post" className="search-form">
           <input
@@ -27,7 +27,7 @@ export default async function ProdutosdParis() {
           <img src="/img/banner.png" alt="banner" />
         </div>
         
-        {/* NOVO: Container para os ícones e links de Pedidos e Estoque */}
+        {/*Container para os ícones e links de Pedidos e Estoque */}
         <div className="nav-links-container">
           <a href="telaPedidos" className="nav-item">
             <img src="/img/pedidos-icone.png" alt="Pedidos" />
