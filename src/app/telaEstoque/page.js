@@ -2,15 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  CircleX,
-  CirclePlus,
-  Upload,
-  Search,
-  Trash2,
-  Pencil,
-  ArrowLeft
+    CircleX,
+    CirclePlus,
+    Upload,
+    Search,
+    Trash2,
+    Pencil,
+    CircleCheck,
 } from "lucide-react";
-import "./style.css"; // Certifique-se de que este arquivo existe
+import "./style.css";
 
 export default function TelaEstoque() {
     const [popupAberto, setPopupAberto] = useState(false);
@@ -21,10 +21,10 @@ export default function TelaEstoque() {
     const [searchTerm, setSearchTerm] = useState("");
     const [produtos, setProdutos] = useState([]);
     const [loading, setLoading] = useState(false);
-    
-    // Estados para o pop-up de filtro
     const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
     const [activeFilter, setActiveFilter] = useState('Todos');
+    const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
+    const [productToDelete, setProductToDelete] = useState(null);
 
     const categoriasFiltro = ['Todos', 'Casa', 'Carros', 'Piscina', 'Essências'];
 
@@ -33,8 +33,6 @@ export default function TelaEstoque() {
 
     const enviarProduto = async () => {
         if (!nome || !categoria || !valor) {
-            // Em um ambiente de produção, substitua `alert` por um modal customizado
-            // para evitar o bloqueio da interface.
             alert("Preencha todos os campos!");
             return;
         }
@@ -57,8 +55,6 @@ export default function TelaEstoque() {
             fetchProdutos();
         } catch (error) {
             console.error("Falha ao enviar produto:", error);
-            // Em um ambiente de produção, substitua `alert` por um modal customizado
-            // para evitar o bloqueio da interface.
             alert("Não foi possível adicionar o produto. Tente novamente.");
         }
     };
@@ -74,7 +70,6 @@ export default function TelaEstoque() {
             }
             const data = await res.json();
             
-            // Lógica de filtragem baseada na categoria ativa
             const filteredData = activeFilter === 'Todos'
                 ? data
                 : data.filter(p => p.categoria === activeFilter);
@@ -88,11 +83,43 @@ export default function TelaEstoque() {
         }
     };
     
+    const handleDeleteClick = (productId) => {
+        setProductToDelete(productId);
+        setIsDeletePopupOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!productToDelete) return;
+    
+        try {
+            const res = await fetch(`/api/produtos/${productToDelete}`, {
+                method: 'DELETE',
+            });
+    
+            if (!res.ok) {
+                throw new Error('Erro ao deletar produto');
+            }
+    
+            console.log("Produto deletado com sucesso!");
+            setIsDeletePopupOpen(false);
+            setProductToDelete(null);
+            fetchProdutos();
+    
+        } catch (error) {
+            console.error("Falha ao deletar produto:", error);
+            alert("Não foi possível deletar o produto. Tente novamente.");
+        }
+    };
+
+    const handleDeleteCancel = () => {
+        setIsDeletePopupOpen(false);
+        setProductToDelete(null);
+    };
+
     useEffect(() => {
         fetchProdutos();
     }, [searchTerm, activeFilter]);
 
-    // Função para o pop-up de filtro
     const handleFilterClick = (category) => {
         setActiveFilter(category);
         setIsFilterPopupOpen(false);
@@ -100,20 +127,17 @@ export default function TelaEstoque() {
 
     return (
         <>
-            {/* Barra superior com ícones de navegação */}
             <div className="top-bar">
-                <a href="/telaPrincipal" className="back-arrow">
-                    <ArrowLeft size={30} color="#fff" />
+                <a href="/telaPrincipal" className="home-botao">
+                    <img src="/img/home-botao.png" alt="Ícone de Home" style={{ width: '40px', height: '40px' }} />
                 </a>
                 <a href="telaInfo" className="info-icon">
                     <img src="/img/info-botao.png" alt="Ícone de Informações" style={{ width: '40px', height: '40px' }} />
                 </a>
             </div>
             
-            {/* Container principal com o restante do conteúdo */}
             <div className="main-content">
                 <div className="stock-container">
-                    {/* Cabeçalho da seção de estoque (com imagem e título) */}
                     <header className="stock-header">
                         <img src="/img/estoque-icone.png" alt="Ícone de Estoque" />
                         <h1>Gerenciar estoque</h1>
@@ -135,14 +159,12 @@ export default function TelaEstoque() {
                             <span>{produtos.length} produtos foram <br/> cadastrados</span>
                         </div>
                         
-                        {/* Container para o link de filtro e o pop-up */}
                         <div className="filter-container">
                             <a href="#" className="filter-link" onClick={() => setIsFilterPopupOpen(true)}>
                                 <img src="/img/Filter.png" alt="Ícone de Filtro" />
                                 <span>Filtrar</span>
                             </a>
 
-                            {/* O pop-up de filtro agora é um elemento irmão do link de filtro */}
                             {isFilterPopupOpen && (
                                 <div className="filter-popup-content-positioned">
                                     <button className="filter-close-btn" onClick={() => setIsFilterPopupOpen(false)}>
@@ -177,9 +199,7 @@ export default function TelaEstoque() {
                         </button>
                     </div>
 
-                    {/* Container para a tabela de produtos */}
                     <div className="product-table-container">
-                        {/* Cabeçalho da tabela */}
                         <div className="product-table-header">
                             <span className="col-checkbox"></span>
                             <span className="col-produto">Produtos</span>
@@ -189,7 +209,6 @@ export default function TelaEstoque() {
                             <span className="col-actions"></span>
                         </div>
 
-                        {/* Lista de produtos exibidos */}
                         {loading ? (
                             <p>Carregando...</p>
                         ) : produtos.length > 0 ? (
@@ -207,7 +226,10 @@ export default function TelaEstoque() {
                                         <span className="col-quantidade-item">{produto.quantidade}</span>
                                         <span className="col-valor-item">R$ {parseFloat(produto.valor).toFixed(2).replace('.', ',')}</span>
                                         <div className="product-actions">
-                                            <button className="action-btn delete-btn">
+                                            <button 
+                                                className="action-btn delete-btn"
+                                                onClick={() => handleDeleteClick(produto.id)}
+                                            >
                                                 <Trash2 size={24} color="#000" />
                                             </button>
                                             <button className="action-btn edit-btn">
@@ -276,6 +298,31 @@ export default function TelaEstoque() {
                                         disabled={!isFormValid}
                                     >
                                         Enviar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {isDeletePopupOpen && (
+                        <div className="popup-overlay delete-popup-overlay">
+                            <div className="popup-content delete-popup-content">
+                                <h2 className="delete-title">Tem certeza que deseja deletar este produto?</h2>
+                                <p className="delete-message">Essa ação não pode ser desfeita.</p>
+                                <div className="delete-buttons">
+                                    <button 
+                                        onClick={handleDeleteCancel} 
+                                        className="delete-cancel-btn"
+                                    >
+                                        <CircleX size={32} color="#dc3545" />
+                                        <span>Cancelar</span>
+                                    </button>
+                                    <button 
+                                        onClick={handleDeleteConfirm} 
+                                        className="delete-confirm-btn"
+                                    >
+                                        <CircleCheck size={32} color="#28a745" />
+                                        <span>Deletar</span>
                                     </button>
                                 </div>
                             </div>

@@ -4,6 +4,8 @@ import "./style.css";
 export default async function ProdutosdParis() {
   const usuario = await db.query("select * from usuario");
   return (
+
+    
     <>
       {/* container da barra superior cinza, que será fixo */}
       <div className="top-bar">
@@ -16,7 +18,7 @@ export default async function ProdutosdParis() {
           ></input>
         </form>
         <a href="telaInfo" className="info-icon">
-          <img src="/img/info.png" alt="Informações" />
+          <img src="/img/info-icone.png" alt="Informações" />
         </a>
       </div>
 
@@ -36,6 +38,10 @@ export default async function ProdutosdParis() {
           <a href="telaEstoque" className="nav-item">
             <img src="/img/estoque-icone.png" alt="Estoque" />
             <span>Estoque</span>
+          </a>
+          <a href="telaClientes" className="nav-item">
+            <img src="/img/clientes-icone.png" alt="Clientes" />
+            <span>Clientes</span>
           </a>
         </div>
 

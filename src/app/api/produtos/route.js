@@ -1,21 +1,14 @@
-import db from "@/lib/db"; // ajuste para seu banco
+import db from "@/lib/db";
 import { NextResponse } from 'next/server';
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const searchTerm = searchParams.get('search') || '';
-
-    let query = "SELECT * FROM produtos";
-    let values = [];
-
-    if (searchTerm) {
-      query += " WHERE nome ILIKE $1 OR categoria ILIKE $1";
-      values = [`%${searchTerm}%`];
-    }
-
-    const result = await db.query(query, values);
+    const query = "SELECT * FROM produtos WHERE nome ILIKE $1 OR categoria ILIKE $1";
+    const values = [`%${searchTerm}%`];
     
+    const result = await db.query(query, values);
     return NextResponse.json(result.rows);
   } catch (error) {
     console.error("Erro na busca de produtos:", error);
