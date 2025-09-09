@@ -215,7 +215,6 @@ export default function TelaEstoque() {
                             <ul className="product-list">
                                 {produtos.map(produto => (
                                     <li key={produto.id} className="product-item">
-                                        <input type="checkbox" className="product-checkbox" />
                                         <div className="product-details-group">
                                             <img src={produto.imagem} alt={produto.nome} className="product-image" />
                                             <div className="product-details-text">

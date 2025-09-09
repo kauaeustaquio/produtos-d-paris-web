@@ -3,7 +3,7 @@ import db from "@/lib/db";
 
 export async function DELETE(request, { params }) {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         if (!id) {
             return NextResponse.json({ message: "ID do produto não fornecido." }, { status: 400 });
