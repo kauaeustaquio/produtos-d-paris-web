@@ -4,27 +4,35 @@ import "./style.css";
 export default async function ProdutosdParis() {
   const usuario = await db.query("select * from usuario");
   return (
-
-    
     <>
       {/* container da barra superior cinza, que será fixo */}
       <div className="top-bar">
         <form method="post" className="search-form">
+          {/* Tag <input> corrigida */}
           <input
             type="text"
             className="caixa-de-pesquisa"
             name="busca"
             placeholder="Pesquisar..."
-          ></input>
+          />
         </form>
-        <a href="telaInfo" className="info-icon">
-          <img src="/img/info-icone.png" alt="Informações" />
-        </a>
+
+        {/* Novo contêiner para agrupar os ícones da direita */}
+        <div className="right-icons">
+          <a href="telaInfo" className="info-icon">
+            <img src="/img/info-icone.png" alt="Informações" />
+          </a>
+
+          <a href="telaUsuario" className="user-icon">
+            {/* Tag <img> corrigida */}
+            <img src="/img/usuario-icone.png" alt="Usuário"/>
+          </a>
+        </div>
       </div>
 
       {/* 2. Este é o container principal, que vai abaixo da barra fixa */}
       <div className="main-content">
-        {/* O banner está agora dentro do main-content */}
+        {/* O banner está dentro do main-content */}
         <div className="banner">
           <img src="/img/banner.png" alt="banner" />
         </div>

@@ -3,14 +3,31 @@
 import { Pencil, CircleX, Upload } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import "./style.css";
-import { useState } from 'react';
 
 export default function SobreALoja() {
+  const [logoUrl, setLogoUrl] = useState("/img/logo-loja-info.png");
   const [showPopup, setShowPopup] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [newImage, setNewImage] = useState(null);
-  const [currentImage, setCurrentImage] = useState("/img/logo-loja-info.png");
+  const [newFile, setNewFile] = useState(null);
+
+  // Efeito para carregar a URL da logo do servidor quando a página é carregada
+  useEffect(() => {
+    async function fetchLogoUrl() {
+      try {
+        const response = await fetch('/api/alterar-logo');
+        if (response.ok) {
+          const data = await response.json();
+          // Atualiza a URL da logo com o caminho vindo do servidor
+          setLogoUrl(data.logoUrl);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar a logo:", error);
+      }
+    }
+    fetchLogoUrl();
+  }, []);
 
   const handleEditClick = () => {
     setShowPopup(true);
@@ -19,21 +36,43 @@ export default function SobreALoja() {
   const handleClosePopup = () => {
     setShowPopup(false);
     setShowConfirmation(false);
-    setNewImage(null);
+    setNewFile(null);
   };
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setNewImage(URL.createObjectURL(file));
+      setNewFile(file);
       setShowConfirmation(true);
+      setShowPopup(false);
     }
-    setShowPopup(false);
   };
 
-  const handleConfirmation = (confirm) => {
-    if (confirm && newImage) {
-      setCurrentImage(newImage); // Altera a imagem da logo para a nova imagem
+  // Envia a imagem para o servidor e atualiza o estado
+  const handleConfirmation = async (confirm) => {
+    if (confirm && newFile) {
+      const formData = new FormData();
+      formData.append('logo', newFile);
+
+      try {
+        // Envia a nova logo para a API
+        const response = await fetch('/api/alterar-logo', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Atualiza o estado com a nova URL retornada pela API
+          setLogoUrl(data.logoUrl);
+          alert("Logo alterada com sucesso!");
+        } else {
+          alert("Falha ao alterar a logo.");
+        }
+      } catch (error) {
+        console.error('Erro ao enviar a imagem:', error);
+        alert("Erro ao conectar com o servidor.");
+      }
     }
     handleClosePopup();
   };
@@ -93,27 +132,27 @@ export default function SobreALoja() {
           <h2 className="titulo-secao">Sobre a Loja</h2>
           <div className="logo-container">
             <Image
-              src={currentImage} // O src agora é dinâmico, baseado no estado
+              src={logoUrl}
               alt="Produtos D' Paris"
               width={150}
               height={150}
               className="logo-sobre"
             />
             <div onClick={handleEditClick} className="edit-icon-wrapper">
-               <Image
-                 src="/img/editar-botao.png"
-                 alt="Ícone de Editar"
-                 width={40}
-                 height={40}
-                 className="edit-icon"
-               />
+              <Image
+                src="/img/editar-botao.png"
+                alt="Ícone de Editar"
+                width={40}
+                height={40}
+                className="edit-icon"
+              />
             </div>
           </div>
           <h1 className="titulo-principal">PRODUTOS D' PARIS</h1>
         </div>
 
         <p className="texto-sobre">
-          A empresa PRODUTOS D' PARIS foi fundada em 23 de março de 2007. <span onClick={handleEditClick} style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>Sendo <Pencil size={20} color="#000" style={{ marginLeft: '5px' }}/></span>
+          A empresa PRODUTOS D' PARIS foi fundada em 23 de março de 2007. <span onClick={handleEditClick} style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>Sendo <Pencil size={20} color="#000" style={{ marginLeft: '5px' }} /></span>
           inscrita sob o CNPJ 08.732.255/0001-50. Atualmente está localizada na
           cidade de Esperança, no estado da Paraíba. Sua principal atividade
           econômica é comércio varejista de produtos saneantes domissanitários.
@@ -122,7 +161,7 @@ export default function SobreALoja() {
         <div className="informacoes">
           <div className="secao">
             <h2 className="subtitulo">
-              Localização <Pencil size={20} color="#000" style={{ marginLeft: '8px' }} onClick={handleEditClick}/>
+              Localização <Pencil size={20} color="#000" style={{ marginLeft: '8px' }} onClick={handleEditClick} />
             </h2>
             <p>Rua Silvino Olavo, Nº 71 - Centro</p>
             <p>Esperança, Paraíba</p>
@@ -130,7 +169,7 @@ export default function SobreALoja() {
           </div>
           <div className="secao">
             <h2 className="subtitulo">
-              Contato <Pencil size={20} color="#000" style={{ marginLeft: '8px' }} onClick={handleEditClick}/>
+              Contato <Pencil size={20} color="#000" style={{ marginLeft: '8px' }} onClick={handleEditClick} />
             </h2>
             <p>(83) 99954-0012</p>
             <p>(83) 98873-5262</p>

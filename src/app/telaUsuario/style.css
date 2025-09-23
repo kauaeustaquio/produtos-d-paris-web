@@ -1,0 +1,140 @@
+/* Importação das fontes */
+@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sen:wght@400..800&display=swap');
+
+/* Estilos globais e de layout */
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f0f0;
+}
+
+.top-bar {
+  width: 100%;
+  height: 50px;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.black-bar {
+  width: 100%;
+  height: 15vh;
+  background-color: black;
+  margin-top: 50px; 
+  position: relative;
+}
+
+.owner-profile {
+  position: absolute;
+  left: 50%;
+  top: 100%; 
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+}
+
+.owner-icon img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: #fff;
+  padding: 10px;
+}
+
+.container-principal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 50px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.profile-info {
+    width: 100%;
+    max-width: 800px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.nome-usuario-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.nome-usuario-display {
+    /* CORRIGIDO: Aplica a fonte Poppins */
+    font-family: 'Poppins', sans-serif;
+    font-size: 25px;
+    color: #000;
+    font-weight: 500;
+    margin-right: 10px;
+}
+
+.configuracoes-secao {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.titulo-secao {
+    font-family: 'League Spartan', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #000;
+}
+
+.linha-horizontal {
+    width: 100%;
+    height: 2px;
+    background-color: #000;
+    margin-top: 10px;
+}
+
+/* Estilos dos campos de formulário */
+.input-field-container {
+    margin-bottom: 25px;
+}
+
+.input-label {
+    font-family: 'Sen', sans-serif;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.input-container {
+    display: flex;
+    align-items: center;
+    border: 1px solid #000;
+    border-radius: 9999px;
+    padding: 10px 15px;
+    background-color: #fff;
+}
+
+.input-field {
+    border: none;
+    outline: none;
+    flex-grow: 1;
+    font-size: 16px;
+    color: #000;
+    background-color: transparent;
+}
+
+.input-field:focus {
+    outline: none;
+}
+
+.edit-icon-container {
+    margin-left: 10px;
+    cursor: pointer;
+}

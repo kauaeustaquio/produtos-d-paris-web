@@ -17,7 +17,8 @@ export default function TelaEstoque() {
     const [nome, setNome] = useState("");
     const [categoria, setCategoria] = useState("");
     const [valor, setValor] = useState("");
-    const [imagem, setImagem] = useState(null);
+    const [imagem, setImagem] = useState(null); // Onde a Data URL será salva
+    const [imagemPreview, setImagemPreview] = useState(null); // Para mostrar a pré-visualização
     const [searchTerm, setSearchTerm] = useState("");
     const [produtos, setProdutos] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -28,12 +29,38 @@ export default function TelaEstoque() {
 
     const categoriasFiltro = ['Todos', 'Casa', 'Carros', 'Piscina', 'Essências'];
 
-    const abrirPopup = () => setPopupAberto(true);
+    const abrirPopup = () => {
+        // Limpar os estados do formulário ao abrir o popup
+        setNome("");
+        setCategoria("");
+        setValor("");
+        setImagem(null);
+        setImagemPreview(null);
+        setPopupAberto(true);
+    };
     const fecharPopup = () => setPopupAberto(false);
 
+    // --- Nova função para lidar com o upload de arquivo ---
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                // `reader.result` é a Data URL
+                setImagem(reader.result);
+                setImagemPreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            setImagem(null);
+            setImagemPreview(null);
+        }
+    };
+    // ----------------------------------------------------
+
     const enviarProduto = async () => {
-        if (!nome || !categoria || !valor) {
-            alert("Preencha todos os campos!");
+        if (!nome || !categoria || !valor || !imagem) {
+            alert("Preencha todos os campos e selecione uma imagem!");
             return;
         }
 
@@ -59,7 +86,7 @@ export default function TelaEstoque() {
         }
     };
     
-    const isFormValid = nome && categoria && valor;
+    const isFormValid = nome && categoria && valor && imagem;
     
     const fetchProdutos = async () => {
         setLoading(true);
@@ -131,9 +158,15 @@ export default function TelaEstoque() {
                 <a href="/telaPrincipal" className="home-botao">
                     <img src="/img/home-botao.png" alt="Ícone de Home" style={{ width: '40px', height: '40px' }} />
                 </a>
-                <a href="telaInfo" className="info-icon">
-                    <img src="/img/info-botao.png" alt="Ícone de Informações" style={{ width: '40px', height: '40px' }} />
-                </a>
+            
+                     <div className="right-icons">
+                        <a href="telaInfo" className="info-icon">
+                            <img src="/img/info-botao.png" alt="Ícone de Informações" />
+                        </a>
+                        <a href="telaUsuario" className="user-icon">
+                            <img src="/img/usuario-icone-branco.png" alt="Usuário"/>
+                        </a>
+                     </div>
             </div>
             
             <div className="main-content">
@@ -216,6 +249,7 @@ export default function TelaEstoque() {
                                 {produtos.map(produto => (
                                     <li key={produto.id} className="product-item">
                                         <div className="product-details-group">
+                                            {/* O src da imagem agora recebe a Data URL do banco de dados */}
                                             <img src={produto.imagem} alt={produto.nome} className="product-image" />
                                             <div className="product-details-text">
                                                 <h3>{produto.nome}</h3>
@@ -252,9 +286,17 @@ export default function TelaEstoque() {
                                 
                                 <div className="popup-left">
                                     <label className="upload-label">
-                                        <input type="file" onChange={(e) => setImagem(e.target.files[0])} />
-                                        <Upload size={48} color="#888" />
-                                        <span>Selecione a imagem do produto</span>
+                                        {/* A nova função `onChange` aqui */}
+                                        <input type="file" onChange={handleFileChange} />
+                                        {/* Mostra a pré-visualização ou o ícone de upload */}
+                                        {imagemPreview ? (
+                                            <img src={imagemPreview} alt="Pré-visualização do produto" className="uploaded-image-preview" />
+                                        ) : (
+                                            <>
+                                                <Upload size={48} color="#888" />
+                                                <span>Selecione a imagem do produto</span>
+                                            </>
+                                        )}
                                     </label>
                                 </div>
                                 

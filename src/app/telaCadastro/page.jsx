@@ -1,16 +1,14 @@
 "use client";
 
 import { useState } from 'react';
-// Importe os ícones de olho aberto e fechado
 import { User, Mail, Eye, EyeOff } from 'lucide-react';
 import "./style.css";
 
-export default function ProdutosdParis() {
+export default function PaginaCadastro() {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmaSenha, setConfirmaSenha] = useState('');
-  // Adiciona o estado para controlar a visibilidade da senha
   const [showPassword, setShowPassword] = useState(false); 
 
   const handleSubmit = async (event) => {
@@ -29,25 +27,28 @@ export default function ProdutosdParis() {
         },
         body: JSON.stringify({ nome, email, senha }),
       });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Erro na resposta do servidor:', errorText);
+        alert(`Erro ao tentar cadastrar: ${errorText || 'Ocorreu um erro no servidor.'}`);
+        return; 
+      }
 
       const data = await response.json();
 
-      if (response.ok) {
-        alert(data.message);
-        setNome('');
-        setEmail('');
-        setSenha('');
-        setConfirmaSenha('');
-      } else {
-        alert(data.message);
-      }
+      alert(data.message);
+      setNome('');
+      setEmail('');
+      setSenha('');
+      setConfirmaSenha('');
+
     } catch (error) {
       console.error('Erro na requisição:', error);
       alert('Erro ao tentar cadastrar. Tente novamente.');
     }
   };
 
-  // Função para alternar a visibilidade da senha
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -95,7 +96,6 @@ export default function ProdutosdParis() {
               <label htmlFor="senha" className="label-com-asterisco">Senha* (mínimo de 6 caracteres)</label>
               <div className="input-icon-container">
                 <input
-                  // Altera o tipo do input com base no estado
                   type={showPassword ? "text" : "password"}
                   id="senha"
                   className="input-field"
@@ -103,9 +103,7 @@ export default function ProdutosdParis() {
                   onChange={(e) => setSenha(e.target.value)}
                   required
                 />
-                {/* Adiciona o evento onClick no ícone */}
                 <span className="input-icon" onClick={togglePasswordVisibility}>
-                  {/* Altera o ícone com base no estado */}
                   {showPassword ? <EyeOff size={25} color="#000" /> : <Eye size={25} color="#000" />}
                 </span>
               </div>
@@ -114,7 +112,6 @@ export default function ProdutosdParis() {
               <label htmlFor="confirmaSenha" className="label-com-asterisco">Insira a senha novamente*</label>
               <div className="input-icon-container">
                 <input
-                  // Altera o tipo do input com base no estado
                   type={showPassword ? "text" : "password"}
                   id="confirmaSenha"
                   className="input-field"
@@ -122,9 +119,7 @@ export default function ProdutosdParis() {
                   onChange={(e) => setConfirmaSenha(e.target.value)}
                   required
                 />
-                {/* Adiciona o evento onClick no ícone */}
                 <span className="input-icon" onClick={togglePasswordVisibility}>
-                  {/* Altera o ícone com base no estado */}
                   {showPassword ? <EyeOff size={25} color="#000" /> : <Eye size={25} color="#000" />}
                 </span>
               </div>

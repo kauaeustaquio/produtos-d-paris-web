@@ -1,0 +1,14 @@
+{
+  "logoUrl": "/img/logo-loja-info.png",
+  "aboutText": "A empresa PRODUTOS D' PARIS foi fundada em 23 de março de 2007. Sendo inscrita sob o CNPJ 08.732.255/0001-50. Atualmente está localizada na cidade de Esperança, no estado da Paraíba. Sua principal atividade econômica é comércio varejista de produtos saneantes domissanitários.",
+  "location": {
+    "street": "Rua Silvino Olavo, Nº 71 - Centro",
+    "city": "Esperança, Paraíba",
+    "zip": "CEP 58135-000"
+  },
+  "contact": {
+    "phone1": "(83) 99954-0012",
+    "phone2": "(83) 98873-5262",
+    "email": "produtosdeparis01@gmail.com"
+  }
+}
