@@ -1,121 +1,228 @@
 @import url('https://fonts.googleapis.com/css2?family=Sansation:wght@300&display=swap');
 
-/* Container da barra superior (cinza) */
-.top-bar {
-  width: 100%;
-  height: 50px;
-  background-color: #eaeaea;
-  display: flex; /* Habilita o Flexbox */
-  align-items: center; /* Centraliza verticalmente */
-  justify-content: space-between; /* **CORRIGIDO**: Alinha os elementos nas extremidades */
-  padding: 0 20px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1000;
-}
-
-/* Container principal que vai abaixo da barra fixa */
-.main-content {
-  padding-top: 50px; /* Igual à altura da .top-bar */
-}
-
-/* Container do banner */
-.banner {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.banner img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-/* Container que agrupa os ícones de Pedidos e Estoque */
-.nav-links-container {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
-
-/* Estilo para cada item de navegação */
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-decoration: none;
-  color: #333;
-  font-family: "Sansation", sans-serif;
-}
-
-.nav-item img {
-  width: 50px;
-  height: 50px;
-}
-
-/* Tamanho do texto e a distância entre o ícone e o nome */
-.nav-item span {
-  font-size: 24px;
-  margin-top: 15px;
-  font-family: "Sansation", sans-serif; 
-}
-
-/* Formulário de pesquisa */
-.search-form {
-  flex-grow: 1; /* Permite que o formulário cresça para ocupar espaço */
-  display: flex;
-  justify-content: center;
-}
-
-/* Campo de pesquisa */
-.caixa-de-pesquisa {
-  background-color: white;
-  color: black;
-  width: 100%;
-  max-width: 400px;
-  padding: 8px 12px;
-  border-radius: 20px;
-  border: none;
-  font-family: "Sansation", sans-serif;
-}
-
-/* **NOVO**: Container para agrupar e alinhar os ícones da direita */
-.right-icons {
-  display: flex;
-  align-items: center;
-  gap: 15px; /* Adiciona um espaçamento entre os ícones */
-}
-
-/* Ícones */
-.info-icon img {
-  height: 40px;
-}
-
-.user-icon img {
-  height: 38px;
-}
-
-/* Estilo para a fonte "Sansation" */
-h3 {
-  font-family: "Sansation", sans-serif;
-  font-weight: 300;
-  font-size: 24px;
-}
-
-/* Corrigindo a centralização e alinhamento do texto */
-.page-content {
-  padding: 0 20px;
-}
-
-.page-content h3 {
-  font-size: 24px;
-}
+/* ========================================================================= */
+/* --- GERAL E FONTES --- */
+/* ========================================================================= */
 
 body {
-  padding-top: 0;
+    padding-top: 0; 
+    margin: 0; 
+    background-color: #f7f7f7; 
 }
+
+h3, .nav-item span, .caixa-de-pesquisa, .product-name, .product-price {
+    font-family: "Sansation", sans-serif;
+    font-weight: 300;
+}
+
+
+/* ========================================================================= */
+/* --- SEÇÃO 1: CABEÇALHO (TOP-BAR) --- */
+/* ========================================================================= */
+
+.top-bar {
+    width: 100%;
+    height: 50px;
+    background-color: #eaeaea;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+}
+
+.main-content {
+    padding-top: 50px; 
+}
+
+.search-form {
+    flex-grow: 1; 
+    display: flex;
+    justify-content: center;
+    margin: 0 20px;
+}
+
+.caixa-de-pesquisa {
+    background-color: white;
+    color: black;
+    width: 100%;
+    max-width: 400px;
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.right-icons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.info-icon img { height: 40px; }
+.user-icon img { height: 38px; }
+
+
+/* ========================================================================= */
+/* --- SEÇÃO 2: NAVEGAÇÃO INTERNA --- */
+/* ========================================================================= */
+
+.banner img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.nav-links-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: #333;
+}
+.nav-item img {
+    width: 50px;
+    height: 50px;
+}
+.nav-item span {
+    font-size: 24px;
+    margin-top: 15px;
+}
+
+/* ========================================================================= */
+/* --- SEÇÃO 3: LISTAGEM E CARDS DE PRODUTOS --- */
+/* ========================================================================= */
+
+.page-content {
+    padding: 0 20px;
+}
+
+.product-category-section {
+    margin-bottom: 30px;
+}
+
+.product-category-section h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 15px;
+    margin-top: 20px;
+}
+
+.product-grid {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 20px; 
+    padding: 0;
+    justify-content: flex-start; 
+}
+
+/* 💥 CARD DE PRODUTO AJUSTADO */
+.product-card {
+    position: relative;
+    /* 🛠️ DIMENSÕES CONFORME ESPECIFICADO */
+    width: 200px; 
+    height: 250px; 
+    /* 🛠️ BORDA CONFORME ESPECIFICADO, SEM SOMBRA */
+    border: 1px solid #000;
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column; 
+    align-items: center; 
+    background-color: #F7F7F7; 
+    box-sizing: border-box;
+}
+
+/* 1. Área da imagem (O QUADRADO) */
+.card-top-image {
+    width: 100%; 
+    height: 60%; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    margin-bottom: 5px; 
+    overflow: hidden; 
+}
+
+/* 2. Estilo da imagem (A IMAGEM REAL) */
+.product-image {
+    width: 100%; 
+    height: 100%;
+    object-fit: contain; 
+    display: block; 
+}
+
+/* 3. Informações de nome e preço (O CONTAINER) */
+.card-info {
+    width: 100%;
+    /* 🛠️ ALINHAMENTO DE TEXTO À ESQUERDA */
+    text-align: left; 
+    padding: 0 5px; 
+    line-height: 1.2;
+    flex-grow: 1; 
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; 
+}
+
+/* Nome do produto */
+.product-name {
+    display: block;
+    font-size: 0.85rem;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+}
+
+/* Preço do produto */
+.product-price {
+    display: block;
+    font-weight: bold;
+    color: #000;
+    font-size: 1rem;
+}
+
+/* 💥 ÍCONE DE EDIÇÃO AJUSTADO */
+.edit-icon-link {
+    position: absolute;
+    /* 🛠️ POSICIONAMENTO NO CANTO INFERIOR DIREITO */
+    bottom: 0;
+    right: 0;
+    
+    /* 🛠️ Estilo simples de link/botão para o ícone */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px; 
+    z-index: 10; 
+    color: #333; /* Cor do ícone */
+    background-color: transparent; /* Fundo transparente */
+    text-decoration: none;
+}
+
+/* 🛠️ O tamanho do ícone (lucide-react) é melhor controlado pelo 'size' no React, mas se for puro CSS, ajuste aqui: */
+.pencil-icon {
+    width: 25px; 
+    height: 25px;
+    /* Garante que o ícone é a única coisa visível na área de padding */
+    display: block;
+}
+
+/* Estilo para garantir que a área clicável não fique estranha */
+.edit-icon-link:hover {
+    color: #007bff; /* Mudar a cor ao passar o mouse */
+}
+

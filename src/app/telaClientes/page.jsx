@@ -12,15 +12,23 @@ export default function TelaEstoque() {
     return (
         <>
             <div className="top-bar">
+                {/* 1. Elemento da Esquerda: Home */}
                 <a href="/telaPrincipal" className="home-botao">
                     <img src="/img/home-botao.png" alt="Ícone de Home" style={{ width: '40px', height: '40px' }} />
                 </a>
-                <a href="telaInfo" className="info-icon">
-                    <img src="/img/info-botao.png" alt="Ícone de Informações" style={{ width: '40px', height: '40px' }} />
-                </a>
-                <a href="telaUsuario" className="user-icon">
-                    <img src="/img/usuario-icone-branco.png" alt="Usuário"/>
-                </a>
+                
+                {/* 2. Elemento da Direita: Grupo de Info e Usuário */}
+                <div className="right-icons-group"> 
+                    {/* Ícone de Informações (primeiro do grupo) */}
+                    <a href="telaInfo" className="info-icon">
+                        <img src="/img/info-botao.png" alt="Ícone de Informações" style={{ width: '40px', height: '40px' }} />
+                    </a>
+                    
+                    {/* Ícone do Usuário (segundo do grupo) */}
+                    <a href="telaUsuario" className="user-icon">
+                        <img src="/img/usuario-icone-branco.png" alt="Usuário"/>
+                    </a>
+                </div>
             </div>
             
             <div className="main-content">

@@ -47,12 +47,27 @@ button {
     margin-right: 20px;
 }
 
+.right-icons-group {
+    /* Define como um container flexível */
+    display: flex;
+    /* Alinha os itens (ícones) verticalmente ao centro */
+    align-items: center; 
+    /* Adiciona um pequeno espaçamento entre o ícone de info e o ícone de usuário */
+    gap: 15px; 
+}
+
+/* Opcional: Remova qualquer margin que você possa ter no .info-icon, se ele estiver atrapalhando */
 .info-icon {
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
-    margin-left: 20px;
+    margin-left: 0; /* Garante que não haja margem extra empurrando */
+}
+
+.user-icon {
+    /* Opcional: remove qualquer margem extra que possa ter */
+    margin-left: 0;
 }
 
 .user-icon img {
