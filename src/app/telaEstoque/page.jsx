@@ -17,8 +17,8 @@ export default function TelaEstoque() {
     const [nome, setNome] = useState("");
     const [categoria, setCategoria] = useState("");
     const [valor, setValor] = useState("");
-    const [imagem, setImagem] = useState(null); // Onde a Data URL será salva
-    const [imagemPreview, setImagemPreview] = useState(null); // Para mostrar a pré-visualização
+    const [imagem, setImagem] = useState(null); 
+    const [imagemPreview, setImagemPreview] = useState(null); 
     const [searchTerm, setSearchTerm] = useState("");
     const [produtos, setProdutos] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -26,11 +26,22 @@ export default function TelaEstoque() {
     const [activeFilter, setActiveFilter] = useState('Todos');
     const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
     const [productToDelete, setProductToDelete] = useState(null);
+    const [produtoEditando, setProdutoEditando] = useState(null); 
 
     const categoriasFiltro = ['Todos', 'Casa', 'Carros', 'Piscina', 'Essências'];
 
-    const abrirPopup = () => {
-        // Limpar os estados do formulário ao abrir o popup
+    const fecharPopup = () => {
+        setPopupAberto(false);
+        setProdutoEditando(null); 
+        setNome("");
+        setCategoria("");
+        setValor("");
+        setImagem(null);
+        setImagemPreview(null);
+    };
+
+    const abrirPopupAdicionar = () => {
+        setProdutoEditando(null); 
         setNome("");
         setCategoria("");
         setValor("");
@@ -38,15 +49,24 @@ export default function TelaEstoque() {
         setImagemPreview(null);
         setPopupAberto(true);
     };
-    const fecharPopup = () => setPopupAberto(false);
+    
+    const abrirPopupEdicao = (produto) => {
+        setProdutoEditando(produto); 
+        
+        setNome(produto.nome);
+        setCategoria(produto.categoria);
+        setValor(String(produto.valor).replace('.', ',')); 
+        setImagem(produto.imagem);
+        setImagemPreview(produto.imagem);
+        
+        setPopupAberto(true);
+    };
 
-    // --- Nova função para lidar com o upload de arquivo ---
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                // `reader.result` é a Data URL
                 setImagem(reader.result);
                 setImagemPreview(reader.result);
             };
@@ -56,33 +76,47 @@ export default function TelaEstoque() {
             setImagemPreview(null);
         }
     };
-    // ----------------------------------------------------
 
-    const enviarProduto = async () => {
+    // FUNÇÃO UNIFICADA: Lida com a criação (POST) e atualização (PUT)
+    const handleSaveProduct = async () => {
         if (!nome || !categoria || !valor || !imagem) {
             alert("Preencha todos os campos e selecione uma imagem!");
             return;
         }
+        
+        const valorNumerico = parseFloat(String(valor).replace(',', '.'));
+
+        const method = produtoEditando ? 'PUT' : 'POST';
+        const url = produtoEditando ? `/api/produtos/${produtoEditando.id}` : '/api/produtos';
+
+        // CORPO DA REQUISIÇÃO: SEM QUANTIDADE
+        const requestBody = {
+            nome, 
+            categoria, 
+            valor: valorNumerico, 
+            imagem,
+        };
 
         try {
-            const res = await fetch('/api/produtos', {
-                method: 'POST',
+            const res = await fetch(url, {
+                method: method,
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ nome, categoria, valor, imagem }),
+                body: JSON.stringify(requestBody),
             });
 
             if (!res.ok) {
-                throw new Error('Erro ao adicionar produto');
+                const errorData = await res.json().catch(() => ({ message: 'Erro desconhecido.' }));
+                throw new Error(`Erro ao ${produtoEditando ? 'atualizar' : 'adicionar'} produto: ${errorData.message || res.statusText}`);
             }
 
-            console.log("Produto adicionado com sucesso!");
+            console.log(`Produto ${produtoEditando ? 'atualizado' : 'adicionado'} com sucesso!`);
             fecharPopup();
             fetchProdutos();
         } catch (error) {
-            console.error("Falha ao enviar produto:", error);
-            alert("Não foi possível adicionar o produto. Tente novamente.");
+            console.error(`Falha ao ${produtoEditando ? 'atualizar' : 'enviar'} produto:`, error);
+            alert(`Não foi possível ${produtoEditando ? 'atualizar' : 'adicionar'} o produto. Tente novamente. Detalhe: ${error.message}`);
         }
     };
     
@@ -91,17 +125,12 @@ export default function TelaEstoque() {
     const fetchProdutos = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/produtos?search=${searchTerm}`);
+            const res = await fetch(`/api/produtos?search=${searchTerm}&category=${activeFilter === 'Todos' ? '' : activeFilter}`);
             if (!res.ok) {
                 throw new Error('Erro ao buscar produtos');
             }
             const data = await res.json();
-            
-            const filteredData = activeFilter === 'Todos'
-                ? data
-                : data.filter(p => p.categoria === activeFilter);
-
-            setProdutos(filteredData);
+            setProdutos(data);
         } catch (error) {
             console.error("Falha ao buscar produtos:", error);
             setProdutos([]);
@@ -124,7 +153,8 @@ export default function TelaEstoque() {
             });
     
             if (!res.ok) {
-                throw new Error('Erro ao deletar produto');
+                const errorData = await res.json().catch(() => ({ message: 'Erro desconhecido.' }));
+                throw new Error(`Erro ao deletar produto: ${errorData.message || res.statusText}`);
             }
     
             console.log("Produto deletado com sucesso!");
@@ -134,7 +164,7 @@ export default function TelaEstoque() {
     
         } catch (error) {
             console.error("Falha ao deletar produto:", error);
-            alert("Não foi possível deletar o produto. Tente novamente.");
+            alert(`Não foi possível deletar o produto. Tente novamente. Detalhe: ${error.message}`);
         }
     };
 
@@ -226,7 +256,7 @@ export default function TelaEstoque() {
                             <span>Categorias</span>
                         </a>
 
-                        <button className="new-product-btn" onClick={abrirPopup}>
+                        <button className="new-product-btn" onClick={abrirPopupAdicionar}>
                             <span className="btn-text">Novo produto</span>
                             <img src="/img/adicionar-botao.png" alt="Ícone de adicionar" />
                         </button>
@@ -237,12 +267,10 @@ export default function TelaEstoque() {
                             <span className="col-checkbox"></span>
                             <span className="col-produto">Produtos</span>
                             <span className="col-categoria">Categoria</span>
-                            <span className="col-quantidade">Quantidade</span>
                             <span className="col-valor">Valor</span>
                             <span className="col-actions"></span>
                         </div>
 
-                        {/* REMOVIDO: a div product-list-card maior */}
                         {loading ? (
                             <p>Carregando...</p>
                         ) : produtos.length > 0 ? (
@@ -250,7 +278,6 @@ export default function TelaEstoque() {
                                 {produtos.map(produto => (
                                     <li key={produto.id} className="product-item">
                                         <div className="product-details-group">
-                                            {/* O card da imagem permanece */}
                                             <div className="product-image-card"> 
                                                 <img src={produto.imagem} alt={produto.nome} className="product-image" />
                                             </div>
@@ -259,7 +286,6 @@ export default function TelaEstoque() {
                                             </div>
                                         </div>
                                         <span className="col-categoria-item">{produto.categoria}</span>
-                                        <span className="col-quantidade-item">{produto.quantidade}</span>
                                         <span className="col-valor-item">R$ {parseFloat(produto.valor).toFixed(2).replace('.', ',')}</span>
                                         <div className="product-actions">
                                             <button 
@@ -268,7 +294,10 @@ export default function TelaEstoque() {
                                             >
                                                 <Trash2 size={24} color="#000" />
                                             </button>
-                                            <button className="action-btn edit-btn">
+                                            <button 
+                                                className="action-btn edit-btn"
+                                                onClick={() => abrirPopupEdicao(produto)} 
+                                            >
                                                 <Pencil size={24} color="#000" />
                                             </button>
                                         </div>
@@ -278,22 +307,18 @@ export default function TelaEstoque() {
                         ) : (
                             <p className="no-products-message">Nenhum produto encontrado.</p>
                         )}
-                        {/* FIM: a div product-list-card não está mais aqui */}
-
                     </div>
 
                     {popupAberto && (
                         <div className="popup-overlay">
-                            <div className="popup-content">
+                            <div className="popup-content">                      
                                 <button className="close-btn" onClick={fecharPopup}>
                                     <CircleX size={28} color="#aaa" />
                                 </button>
                                 
                                 <div className="popup-left">
                                     <label className="upload-label">
-                                        {/* A nova função `onChange` aqui */}
                                         <input type="file" onChange={handleFileChange} />
-                                        {/* Mostra a pré-visualização ou o ícone de upload */}
                                         {imagemPreview ? (
                                             <img src={imagemPreview} alt="Pré-visualização do produto" className="uploaded-image-preview" />
                                         ) : (
@@ -326,6 +351,7 @@ export default function TelaEstoque() {
                                         <option value="Carros">Carros</option>
                                         <option value="Piscina">Piscina</option>
                                         <option value="Cozinhas">Cozinhas</option>
+                                        <option value="Essências">Essências</option>
                                         <option value="--">-</option>
                                     </select>
 
@@ -333,17 +359,17 @@ export default function TelaEstoque() {
                                     <input
                                         id="valor"
                                         type="text"
-                                        placeholder="Ex: R$ 12,00"
+                                        placeholder="Ex: 12,00"
                                         value={valor}
                                         onChange={(e) => setValor(e.target.value)}
                                     />
 
                                     <button
-                                        onClick={enviarProduto}
+                                        onClick={handleSaveProduct} 
                                         className={`submit-btn ${isFormValid ? "enabled" : ""}`}
                                         disabled={!isFormValid}
                                     >
-                                        Enviar
+                                        {produtoEditando ? 'Atualizar' : 'Adicionar'} 
                                     </button>
                                 </div>
                             </div>
