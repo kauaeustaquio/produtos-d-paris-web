@@ -216,27 +216,32 @@ button {
 }
 
 /* --- Tabela de Produtos --- */
-/* Remove o estilo de card branco para a tabela, apenas mantém a estrutura interna */
+/* Ajuste o container para ter o max-width e padding corretos */
 .product-table-container {
+    max-width: 1195px; 
     width: 100%;
-    max-width: 900px;
-    padding: 1rem;
+    padding: 0 2rem; /* Adicionado um padding lateral para manter o alinhamento */
+    margin: 0 auto; /* Centraliza */
 }
 
+/* A div product-list-card foi REMOVIDA daqui. */
+
+/* Ajuste do cabeçalho */
 .product-table-header {
     display: flex;
     align-items: center;
     width: 100%;
-    padding: 0 1rem 0.5rem 1rem;
+    padding: 0 0 0.5rem 0; /* Padding ajustado */
     color: #555;
     font-weight: 500;
     font-size: 0.9rem;
     border-bottom: 2px solid #ddd;
+    margin-bottom: 1rem; /* Margem adicionada para separar o cabeçalho da lista */
 }
 
 .product-table-header span {
     flex: 1;
-    text-align: left; /* Adicionado para alinhar os títulos à esquerda */
+    text-align: left; 
 }
 
 /* Ajuste das larguras das colunas para alinhar com os itens da lista */
@@ -246,13 +251,6 @@ button {
 .col-quantidade { flex: 1; }
 .col-valor { flex: 1; }
 .col-actions { flex: 0 0 80px; text-align: right;}
-
-/* Estilos para a lista de produtos (corpo da tabela) */
-.product-list {
-    list-style: none;
-    padding: 0;
-    width: 100%;
-}
 
 .product-item {
     display: flex;
@@ -273,14 +271,45 @@ button {
     display: flex;
     align-items: center;
     flex: 2;
-    gap: 10px;
+    gap: 0; /* O espaçamento é definido pelo margin-right do .product-image-card */
 }
 
+/* ESTILOS DO CARD DA IMAGEM DO PRODUTO (MANTIDO) */
+.product-image-card {
+    /* Dimensões ajustadas para acomodar a imagem 80x80 com margem */
+    /* Ex: 100px x 100px */
+    width: 100px; 
+    height: 100px;
+    
+    /* Estilo de Card: Branco, radios 20, sombra (blur 10, spread 2) */
+    background-color: white; 
+    border-radius: 20px; 
+    box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.1); 
+    
+    /* Centralizar a imagem internamente */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Adiciona espaçamento entre a imagem e o texto */
+    margin-right: 15px; 
+    
+    /* Garante que a imagem não ultrapasse as bordas arredondadas do card */
+    overflow: hidden;
+    
+    /* Impede que o item encolha ou cresça no flexbox */
+    flex-shrink: 0; 
+}
+
+/* Ajuste do estilo da imagem para caber dentro do novo card */
 .product-image {
-    width: 60px;
-    height: 60px;
-    border-radius: 10px;
-    object-fit: cover;
+    /* 💥 MUDANÇA ESSENCIAL: Limita o tamanho real da imagem a 80x80 pixels */
+    width: 80px;
+    height: 80px;
+    
+    /* Garante que a imagem caiba e mantenha proporção (importante para imagens sem fundo) */
+    object-fit: contain; 
+    border-radius: 10px; 
 }
 
 .product-details-text {
@@ -589,3 +618,4 @@ button {
     background-color: #e0e0e0;
     transform: translateY(-2px);
 }
+

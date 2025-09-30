@@ -129,7 +129,7 @@ export default function PaginaCadastro() {
             </div>
           </form>
           <div className="login-link">
-            <span>Já tem uma conta?</span> <a href="/login">Faça login</a>
+            <span>Já tem uma conta?</span> <a href="/telaLogin">Faça login</a>
           </div>
         </div>
       </div>

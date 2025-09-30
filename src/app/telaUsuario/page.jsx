@@ -1,5 +1,7 @@
+// page.jsx
 import db from "@/lib/db";
-import { User, Mail, Lock, Phone, Pencil, ArrowRightFromLine } from 'lucide-react';
+import { User, Mail, Lock, Phone, Pencil } from 'lucide-react'; // LogOut removido
+import LogoutConfirmation from "@/components/LogoutConfirmation"; // 1. Componente importado
 import "./style.css";
 
 export default async function ProdutosdParis() {
@@ -30,7 +32,8 @@ export default async function ProdutosdParis() {
         <div className="profile-info">
           <div className="nome-usuario-container">
             <div className="nome-usuario-display">{nomeUsuario}</div>
-            <ArrowRightFromLine size={20} color="#000" />
+            {/* 2. Substituído pelo componente cliente que contém a lógica do Modal */}
+            <LogoutConfirmation /> 
           </div>
 
           <div className="configuracoes-secao">

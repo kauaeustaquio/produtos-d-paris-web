@@ -159,14 +159,14 @@ export default function TelaEstoque() {
                     <img src="/img/home-botao.png" alt="Ícone de Home" style={{ width: '40px', height: '40px' }} />
                 </a>
             
-                     <div className="right-icons">
+                    <div className="right-icons">
                         <a href="telaInfo" className="info-icon">
                             <img src="/img/info-botao.png" alt="Ícone de Informações" />
                         </a>
                         <a href="telaUsuario" className="user-icon">
                             <img src="/img/usuario-icone-branco.png" alt="Usuário"/>
                         </a>
-                     </div>
+                    </div>
             </div>
             
             <div className="main-content">
@@ -242,6 +242,7 @@ export default function TelaEstoque() {
                             <span className="col-actions"></span>
                         </div>
 
+                        {/* REMOVIDO: a div product-list-card maior */}
                         {loading ? (
                             <p>Carregando...</p>
                         ) : produtos.length > 0 ? (
@@ -249,8 +250,10 @@ export default function TelaEstoque() {
                                 {produtos.map(produto => (
                                     <li key={produto.id} className="product-item">
                                         <div className="product-details-group">
-                                            {/* O src da imagem agora recebe a Data URL do banco de dados */}
-                                            <img src={produto.imagem} alt={produto.nome} className="product-image" />
+                                            {/* O card da imagem permanece */}
+                                            <div className="product-image-card"> 
+                                                <img src={produto.imagem} alt={produto.nome} className="product-image" />
+                                            </div>
                                             <div className="product-details-text">
                                                 <h3>{produto.nome}</h3>
                                             </div>
@@ -275,6 +278,8 @@ export default function TelaEstoque() {
                         ) : (
                             <p className="no-products-message">Nenhum produto encontrado.</p>
                         )}
+                        {/* FIM: a div product-list-card não está mais aqui */}
+
                     </div>
 
                     {popupAberto && (
