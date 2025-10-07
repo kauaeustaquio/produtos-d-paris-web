@@ -4,14 +4,24 @@ import {
     Pencil,
 } from "lucide-react";
 
-// 1. Função para buscar os produtos da API (mantida inalterada)
-async function getProdutos() {
+// Importa o componente cliente corrigido
+import { SearchInput } from '@/components/SearchInput'; 
+// NOTA: Se você tiver problemas, mude para o caminho relativo: import { SearchInput } from '../../components/SearchInput';
+
+
+// Função para buscar os produtos da API (utiliza o termo de busca)
+async function getProdutos(buscaTermo = '') {
     const API_BASE_URL = process.env.NEXT_PUBLIC_VERCEL_URL
         ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
         : 'http://localhost:3000';
 
+    // Se houver termo de busca, adiciona à URL para que a API filtre no banco de dados (mais eficiente)
+    const url = buscaTermo 
+        ? `${API_BASE_URL}/api/produtos?search=${encodeURIComponent(buscaTermo)}`
+        : `${API_BASE_URL}/api/produtos`;
+
     try {
-        const res = await fetch(`${API_BASE_URL}/api/produtos`, {
+        const res = await fetch(url, {
             cache: 'no-store'
         });
 
@@ -29,9 +39,11 @@ async function getProdutos() {
     }
 }
 
+// O Server Component que renderiza a página
 export default async function ProdutosdParis({ searchParams }) {
-    // ... (Lógica de busca e filtragem inalterada) ...
-    const busca = searchParams?.busca?.toLowerCase() || '';
+    
+    const { busca: buscaParam = '' } = searchParams;
+    const busca = buscaParam;
 
     let usuario = [];
     try {
@@ -40,18 +52,7 @@ export default async function ProdutosdParis({ searchParams }) {
         console.error("Erro ao buscar usuário (ignorado para carregar produtos):", e);
     }
 
-    const todosOsProdutos = await getProdutos();
-
-    const produtosFiltrados = todosOsProdutos.filter(produto => {
-        if (!busca) {
-            return true;
-        }
-
-        const nomeProduto = produto.nome ? produto.nome.toLowerCase() : '';
-        const categoriaProduto = produto.categoria ? produto.categoria.toLowerCase() : '';
-
-        return nomeProduto.includes(busca) || categoriaProduto.includes(busca);
-    });
+    const produtosFiltrados = await getProdutos(busca);
 
     const produtosPorCategoria = produtosFiltrados.reduce((acc, produto) => {
         const categoria = produto.categoria || 'Outros';
@@ -62,19 +63,17 @@ export default async function ProdutosdParis({ searchParams }) {
         return acc;
     }, {});
 
+    // Função de formatação de preço
+    const formatPrice = (price) => {
+        return `R$ ${parseFloat(price).toFixed(2).replace('.', ',')}`;
+    };
+
     return (
         <>
             <div className="top-bar">
-                <form method="get" className="search-form">
-                    <input
-                        type="text"
-                        className="caixa-de-pesquisa"
-                        name="busca"
-                        placeholder="Pesquisar..."
-                        defaultValue={searchParams?.busca || ''}
-                    />
-                    <button type="submit" style={{ display: 'none' }}></button>
-                </form>
+                {/* Substituição do formulário manual: Usa o componente cliente SearchInput */}
+                <SearchInput />
+                
                 <div className="right-icons">
                     <a href="telaInfo" className="info-icon">
                         <img src="/img/info-icone.png" alt="Informações" />
@@ -112,32 +111,61 @@ export default async function ProdutosdParis({ searchParams }) {
                                 <h3>{categoria}</h3>
 
                                 <div className="product-grid">
-                                    {listaDeProdutos.map(produto => (
-                                        <div key={produto.id} className="product-card">
-                                            
-                                            {/* 💥 MUDANÇA 1: Adiciona o container .card-top-image */}
-                                            <div className="card-top-image">
-                                                {/* 💥 MUDANÇA 2: Renomeia a classe para .product-image */}
-                                                <img
-                                                    src={produto.imagem || '/img/placeholder.png'}
-                                                    alt={produto.nome}
-                                                    className="product-image" 
-                                                />
-                                            </div>
-                                            
-                                            <div className="card-info">
-                                                <span className="product-name">{produto.nome}</span>
-                                                <p className="product-price">
-                                                    R$ {parseFloat(produto.valor).toFixed(2).replace('.', ',')}
-                                                </p>
+                                    {listaDeProdutos.map(produto => {
+                                        // 1. CALCULA O NOVO VALOR AQUI (FORMA 1 - MELHOR PRÁTICA)
+                                        const precoOriginal = parseFloat(produto.valor);
+                                        const isPromocao = produto.emPromocao;
+                                        const descontoPercentual = produto.desconto || 0;
+                                        
+                                        let valorComDesconto = precoOriginal;
+                                        
+                                        if (isPromocao && descontoPercentual > 0) {
+                                            valorComDesconto = precoOriginal * (1 - descontoPercentual / 100);
+                                        }
+
+                                        const exibirDesconto = isPromocao && descontoPercentual > 0;
+                                        
+                                        return (
+                                            <div key={produto.id} className="product-card">
                                                 
-                                                {/* 💥 MUDANÇA 3: Substitui o botão vazio pelo link de edição (Pencil) */}
-                                                <a href={`/editar-produto/${produto.id}`} className="edit-icon-link">
-                                                    <Pencil className="pencil-icon" />
-                                                </a>
+                                                <div className="card-top-image">
+                                                    {exibirDesconto && (
+                                                        // Tag de desconto visível
+                                                        <span className="discount-tag" style={{ position: 'absolute', top: '10px', right: '10px', background: 'red', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
+                                                            -{descontoPercentual}%
+                                                        </span>
+                                                    )}
+                                                    <img
+                                                        src={produto.imagem || '/img/placeholder.png'}
+                                                        alt={produto.nome}
+                                                        className="product-image" 
+                                                    />
+                                                </div>
+                                                
+                                                <div className="card-info">
+                                                    <span className="product-name">{produto.nome}</span>
+                                                    
+                                                    <p className="product-price">
+                                                        {exibirDesconto && (
+                                                            // Valor original riscado (preço de lista)
+                                                            <span style={{ textDecoration: 'line-through', color: '#999', marginRight: '8px', fontSize: '0.9em' }}>
+                                                                {formatPrice(precoOriginal)}
+                                                            </span>
+                                                        )}
+                                                        
+                                                        {/* Valor exibido: o preço com desconto (se houver), senão o original */}
+                                                        <span style={{ color: exibirDesconto ? 'red' : 'green', fontWeight: 'bold' }}>
+                                                            {formatPrice(valorComDesconto)}
+                                                        </span>
+                                                    </p>
+                                                    
+                                                    <a href={`/editar-produto/${produto.id}`} className="edit-icon-link">
+                                                        <Pencil className="pencil-icon" />
+                                                    </a>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         ))

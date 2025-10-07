@@ -332,6 +332,52 @@ button {
     text-align: left; /* Alinhado para a esquerda para justificar o texto */
 }
 
+/* --- NOVOS ESTILOS PARA PREÇO E PROMOÇÃO --- */
+.col-valor-item {
+    /* Define o container do valor como um flex container para alinhar os preços */
+    display: flex;
+    flex-direction: column; /* Coloca os preços um abaixo do outro */
+    align-items: flex-start; /* Alinha o texto à esquerda (se o flex: 1 for o esperado) */
+}
+
+/* Estilo do preço original (riscado) */
+.col-valor-item .original-price {
+    color: #888; /* Cinza suave */
+    text-decoration: line-through;
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
+/* Estilo do preço de promoção (novo preço) */
+.col-valor-item .sale-price {
+    color: #e74c3c; /* Vermelho/Cor de destaque para promoção */
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+/* Estilo da tag de desconto no canto da imagem (se necessário) */
+.product-image-card {
+    position: relative; /* Necessário para posicionar o desconto */
+    /* ... outros estilos ... */
+}
+
+/* Se você usar a tag de desconto no card (bom para visualização) */
+.discount-tag {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: #e74c3c; /* Fundo vermelho */
+    color: white;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    z-index: 5;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+/* --- FIM DOS ESTILOS DE PREÇO --- */
+
+
 .product-actions {
     flex: 0 0 80px;
     display: flex;
@@ -356,6 +402,8 @@ button {
 }
 
 /* --- Pop-up de Adicionar Produto (estilos já fornecidos) --- */
+/* ... (Restante do CSS de pop-ups mantido inalterado) ... */
+
 .popup-overlay {
     position: fixed;
     top: 0;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
     CircleX,
     CirclePlus,
@@ -11,6 +11,11 @@ import {
     CircleCheck,
 } from "lucide-react";
 import "./style.css";
+
+// Função utilitária para formatar valores em Reais (BRL)
+const formatarParaBRL = (valor) => {
+    return `R$ ${parseFloat(valor).toFixed(2).replace('.', ',')}`;
+};
 
 export default function TelaEstoque() {
     const [popupAberto, setPopupAberto] = useState(false);
@@ -27,8 +32,34 @@ export default function TelaEstoque() {
     const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
     const [productToDelete, setProductToDelete] = useState(null);
     const [produtoEditando, setProdutoEditando] = useState(null); 
+    
+    // NOVOS ESTADOS PARA PROMOÇÃO/DESCONTO
+    const [desconto, setDesconto] = useState(0); // 0 a 100 (%)
+    const [emPromocao, setEmPromocao] = useState(false);
 
-    const categoriasFiltro = ['Todos', 'Casa', 'Carros', 'Piscina', 'Essências'];
+    const categoriasFiltro = ['Todos', 'Casa', 'Carros', 'Piscina', 'Perfumaria'];
+
+    // Valores de desconto de 5 em 5 até 100%
+    const descontosOpcoes = useMemo(() => {
+        const options = [];
+        for (let i = 0; i <= 100; i += 5) {
+            options.push(i);
+        }
+        return options;
+    }, []);
+
+    // FUNÇÃO QUE CALCULA O NOVO VALOR COM DESCONTO
+    const calcularValorComDesconto = (valorOriginal, percentualDesconto) => {
+        const valorNumerico = parseFloat(String(valorOriginal).replace(',', '.'));
+        if (isNaN(valorNumerico) || percentualDesconto < 0 || percentualDesconto > 100) {
+            return valorNumerico;
+        }
+        return valorNumerico * (1 - percentualDesconto / 100);
+    };
+
+    const valorComDesconto = useMemo(() => {
+        return calcularValorComDesconto(valor, desconto);
+    }, [valor, desconto]);
 
     const fecharPopup = () => {
         setPopupAberto(false);
@@ -38,6 +69,9 @@ export default function TelaEstoque() {
         setValor("");
         setImagem(null);
         setImagemPreview(null);
+        // LIMPA NOVOS ESTADOS
+        setDesconto(0); 
+        setEmPromocao(false);
     };
 
     const abrirPopupAdicionar = () => {
@@ -47,19 +81,33 @@ export default function TelaEstoque() {
         setValor("");
         setImagem(null);
         setImagemPreview(null);
+        // ESTADOS PADRÃO
+        setDesconto(0);
+        setEmPromocao(false);
         setPopupAberto(true);
     };
     
     const abrirPopupEdicao = (produto) => {
         setProdutoEditando(produto); 
-        
+
         setNome(produto.nome);
         setCategoria(produto.categoria);
         setValor(String(produto.valor).replace('.', ',')); 
         setImagem(produto.imagem);
         setImagemPreview(produto.imagem);
         
+        // RECUPERA ESTADOS DE DESCONTO/PROMOÇÃO DO PRODUTO (Assumindo que existem no objeto `produto`)
+        const desc = produto.desconto || 0;
+        setDesconto(desc);
+        setEmPromocao(desc > 0); // Define emPromoção se o desconto for maior que 0
+        
         setPopupAberto(true);
+    };
+
+    const handleDiscountChange = (newDesconto) => {
+        const newDesc = parseInt(newDesconto);
+        setDesconto(newDesc);
+        setEmPromocao(newDesc > 0);
     };
 
     const handleFileChange = (e) => {
@@ -89,12 +137,14 @@ export default function TelaEstoque() {
         const method = produtoEditando ? 'PUT' : 'POST';
         const url = produtoEditando ? `/api/produtos/${produtoEditando.id}` : '/api/produtos';
 
-        // CORPO DA REQUISIÇÃO: SEM QUANTIDADE
+        // CORPO DA REQUISIÇÃO: INCLUI DESCONTO E EM_PROMOCAO
         const requestBody = {
             nome, 
             categoria, 
             valor: valorNumerico, 
             imagem,
+            desconto: desconto, // Novo campo
+            emPromocao: emPromocao, // Novo campo
         };
 
         try {
@@ -283,10 +333,25 @@ export default function TelaEstoque() {
                                             </div>
                                             <div className="product-details-text">
                                                 <h3>{produto.nome}</h3>
+                                                {/* Exibe o status de promoção se houver */}
+                                                {produto.emPromocao && produto.desconto > 0 && (
+                                                    <span className="promotion-tag">🔥 {produto.desconto}% OFF</span>
+                                                )}
                                             </div>
                                         </div>
                                         <span className="col-categoria-item">{produto.categoria}</span>
-                                        <span className="col-valor-item">R$ {parseFloat(produto.valor).toFixed(2).replace('.', ',')}</span>
+                                        {/* Exibe o preço com desconto, se em promoção */}
+                                        <span className={`col-valor-item ${produto.emPromocao && produto.desconto > 0 ? 'promo-price' : ''}`}>
+                                            {produto.emPromocao && produto.desconto > 0 ? (
+                                                <>
+                                                    <del>{formatarParaBRL(produto.valor)}</del>
+                                                    <br/>
+                                                    <strong>{formatarParaBRL(calcularValorComDesconto(produto.valor, produto.desconto))}</strong>
+                                                </>
+                                            ) : (
+                                                formatarParaBRL(produto.valor)
+                                            )}
+                                        </span>
                                         <div className="product-actions">
                                             <button 
                                                 className="action-btn delete-btn"
@@ -311,7 +376,7 @@ export default function TelaEstoque() {
 
                     {popupAberto && (
                         <div className="popup-overlay">
-                            <div className="popup-content">                      
+                            <div className="popup-content">                      
                                 <button className="close-btn" onClick={fecharPopup}>
                                     <CircleX size={28} color="#aaa" />
                                 </button>
@@ -351,7 +416,7 @@ export default function TelaEstoque() {
                                         <option value="Carros">Carros</option>
                                         <option value="Piscina">Piscina</option>
                                         <option value="Cozinhas">Cozinhas</option>
-                                        <option value="Essências">Essências</option>
+                                        <option value="Perfumaria">Perfumaria</option>
                                         <option value="--">-</option>
                                     </select>
 
@@ -363,6 +428,31 @@ export default function TelaEstoque() {
                                         value={valor}
                                         onChange={(e) => setValor(e.target.value)}
                                     />
+                                    
+                                    {/* NOVO CAMPO: DESCONTO E NOVO VALOR */}
+                                    {produtoEditando && (
+                                        <>
+                                            <label htmlFor="desconto">Desconto ({desconto}%)</label>
+                                            <select
+                                                id="desconto"
+                                                value={desconto}
+                                                onChange={(e) => handleDiscountChange(e.target.value)}
+                                                className={emPromocao ? 'em-promocao-select' : ''}
+                                            >
+                                                {descontosOpcoes.map(d => (
+                                                    <option key={d} value={d}>{d}%</option>
+                                                ))}
+                                            </select>
+                                            
+                                            <p className="promocao-status">
+                                                Status: {emPromocao ? 
+                                                    `Em Promoção. Novo Valor: ${formatarParaBRL(valorComDesconto)}` : 
+                                                    `Promoção Inativa. Valor Original: ${formatarParaBRL(valorComDesconto)}`
+                                                }
+                                            </p>
+                                        </>
+                                    )}
+                                    {/* FIM NOVO CAMPO */}
 
                                     <button
                                         onClick={handleSaveProduct} 
