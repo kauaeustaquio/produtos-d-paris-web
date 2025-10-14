@@ -1,9 +1,7 @@
-/* Importação de fontes */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
 
-/* --- Estilos Globais e Reset --- */
 * {
     margin: 0;
     padding: 0;
@@ -23,26 +21,24 @@ button {
     font-size: 1rem;
 }
 
-/* --- Container da barra superior (preta) --- */
 .top-bar {
     width: 100%;
-    height: 3.125rem; /* 50px */
+    height: 3.125rem; 
     background-color: #000000;
     display: flex;
     align-items: center;
-    justify-content: space-between; /* Alinha os dois itens principais para as extremidades */
-    padding: 0 1.5rem; /* 24px */
+    justify-content: space-between; 
+    padding: 0 1.5rem; 
     position: fixed;
     top: 0;
     left: 0;
     z-index: 1000;
 }
 
-/* Novo container para agrupar os ícones da direita */
 .right-icons {
     display: flex;
     align-items: center;
-    gap: 15px; /* Adiciona um espaço entre os dois ícones */
+    gap: 15px; 
 }
 
 .home-botao img, 
@@ -77,7 +73,6 @@ button {
     font-weight: 500;
 }
 
-/* --- Container Principal --- */
 .main-content {
     padding-top: 5rem; 
     width: 100%;
@@ -92,12 +87,11 @@ button {
     padding: 2rem;
 }
 
-/* Estilo do cabeçalho da seção de estoque */
 .stock-header {
     display: flex;
-    flex-direction: column; /* Alinha os itens na vertical */
+    flex-direction: column; 
     align-items: center;
-    gap: 10px; /* Espaço entre a imagem e o texto */
+    gap: 10px; 
     margin-bottom: 2rem;
     color: #555;
     text-align: center;
@@ -111,21 +105,17 @@ button {
     color: #333;
 }
 
-/* --- Barra de Controles --- */
 .controls-bar {
     display: flex;
     align-items: center;
-    /* Espaçamento entre os elementos */
     gap: 1rem;
-    /* Dimensões do card de controle */
-    width: 1195px; /* Largura ajustada */
-    height: 109px; /* Altura ajustada */
+    width: 1195px; 
+    height: 109px; 
     background-color: #fff;
     padding: 0.75rem 1.5rem;
-    border-radius: 10px; /* Raio de borda ajustado */
+    border-radius: 10px; 
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     margin-bottom: 2rem;
-    /* Alinha os itens nas extremidades, empurrando-os para as laterais */
     justify-content: space-between; 
 }
 
@@ -133,12 +123,12 @@ button {
     display: flex;
     align-items: center;
     background-color: #F7F7F7;
-    border-radius: 10px; /* Raio de borda ajustado */
+    border-radius: 10px; 
     padding: 0.5rem 1rem;
-    width: 237px; /* Largura fixa para o campo de pesquisa */
+    width: 237px; 
     height: 58px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    flex-shrink: 0; /* Impede que o item encolha */
+    flex-shrink: 0; 
 }
 
 .search-input {
@@ -195,9 +185,9 @@ button {
     align-items: center;
     justify-content: center;
     gap: 0.25rem;
-    width: 323px; /* Largura ajustada */
-    height: 90px; /* Altura ajustada */
-    border-radius: 20px; /* Raio de borda ajustado */
+    width: 323px; 
+    height: 90px; 
+    border-radius: 20px; 
     background-color: #e0e0e0;
     border: none;
     cursor: pointer;
@@ -215,26 +205,22 @@ button {
     background-color: #d0d0d0;
 }
 
-/* --- Tabela de Produtos --- */
-/* Ajuste o container para ter o max-width e padding corretos */
 .product-table-container {
     max-width: 1195px; 
     width: 100%;
-    padding: 0 2rem; /* Adicionado um padding lateral para manter o alinhamento */
-    margin: 0 auto; /* Centraliza */
+    padding: 0 2rem; 
+    margin: 0 auto;
 }
 
-/* Ajuste do cabeçalho */
 .product-table-header {
     display: flex;
     align-items: center;
     width: 100%;
-    padding: 0 0 0.5rem 0; /* Padding ajustado */
-    color: #555;
+    padding: 0 0 0.5rem 0; 
     font-weight: 500;
     font-size: 0.9rem;
     border-bottom: 2px solid #ddd;
-    margin-bottom: 1rem; /* Margem adicionada para separar o cabeçalho da lista */
+    margin-bottom: 1rem; 
 }
 
 .product-table-header span {
@@ -242,7 +228,6 @@ button {
     text-align: left; 
 }
 
-/* Ajuste das larguras das colunas para alinhar com os itens da lista */
 .col-checkbox { flex: 0 0 50px; }
 .col-produto { flex: 2; }
 .col-categoria { flex: 1; }
@@ -269,43 +254,29 @@ button {
     display: flex;
     align-items: center;
     flex: 2;
-    gap: 0; /* O espaçamento é definido pelo margin-right do .product-image-card */
+    gap: 0; 
 }
 
-/* ESTILOS DO CARD DA IMAGEM DO PRODUTO (MANTIDO) */
 .product-image-card {
-    /* Dimensões ajustadas para acomodar a imagem 80x80 com margem */
-    /* Ex: 100px x 100px */
     width: 100px; 
     height: 100px;
-    
-    /* Estilo de Card: Branco, radios 20, sombra (blur 10, spread 2) */
+
     background-color: white; 
     border-radius: 20px; 
     box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.1); 
-    
-    /* Centralizar a imagem internamente */
     display: flex;
     align-items: center;
     justify-content: center;
-    
-    /* Adiciona espaçamento entre a imagem e o texto */
     margin-right: 15px; 
-    
-    /* Garante que a imagem não ultrapasse as bordas arredondadas do card */
     overflow: hidden;
-    
-    /* Impede que o item encolha ou cresça no flexbox */
     flex-shrink: 0; 
 }
 
-/* Ajuste do estilo da imagem para caber dentro do novo card */
 .product-image {
-    /* 💥 MUDANÇA ESSENCIAL: Limita o tamanho real da imagem a 80x80 pixels */
+
     width: 80px;
     height: 80px;
-    
-    /* Garante que a imagem caiba e mantenha proporção (importante para imagens sem fundo) */
+
     object-fit: contain; 
     border-radius: 10px; 
 }
@@ -321,7 +292,6 @@ button {
     font-weight: 500;
 }
 
-/* Reajuste dos flex e alinhamento do texto para alinhamento correto */
 .col-categoria-item,
 .col-quantidade-item,
 .col-valor-item {
@@ -329,44 +299,39 @@ button {
     font-size: 0.9rem;
     color: #555;
     font-weight: 500;
-    text-align: left; /* Alinhado para a esquerda para justificar o texto */
+    text-align: left; 
 }
 
-/* --- NOVOS ESTILOS PARA PREÇO E PROMOÇÃO --- */
 .col-valor-item {
-    /* Define o container do valor como um flex container para alinhar os preços */
+
     display: flex;
-    flex-direction: column; /* Coloca os preços um abaixo do outro */
-    align-items: flex-start; /* Alinha o texto à esquerda (se o flex: 1 for o esperado) */
+    flex-direction: column; 
+    align-items: flex-start; 
 }
 
-/* Estilo do preço original (riscado) */
 .col-valor-item .original-price {
-    color: #888; /* Cinza suave */
+    color: #888; 
     text-decoration: line-through;
     font-size: 0.8rem;
     font-weight: 400;
 }
 
-/* Estilo do preço de promoção (novo preço) */
 .col-valor-item .sale-price {
-    color: #e74c3c; /* Vermelho/Cor de destaque para promoção */
+    color: #e74c3c; 
     font-size: 1rem;
     font-weight: 700;
 }
 
-/* Estilo da tag de desconto no canto da imagem (se necessário) */
 .product-image-card {
-    position: relative; /* Necessário para posicionar o desconto */
-    /* ... outros estilos ... */
+    position: relative; 
+
 }
 
-/* Se você usar a tag de desconto no card (bom para visualização) */
 .discount-tag {
     position: absolute;
     top: 5px;
     right: 5px;
-    background-color: #e74c3c; /* Fundo vermelho */
+    background-color: #e74c3c; 
     color: white;
     padding: 3px 8px;
     border-radius: 5px;
@@ -375,8 +340,6 @@ button {
     z-index: 5;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
-/* --- FIM DOS ESTILOS DE PREÇO --- */
-
 
 .product-actions {
     flex: 0 0 80px;
@@ -400,9 +363,6 @@ button {
     padding: 2rem;
     color: #888;
 }
-
-/* --- Pop-up de Adicionar Produto (estilos já fornecidos) --- */
-/* ... (Restante do CSS de pop-ups mantido inalterado) ... */
 
 .popup-overlay {
     position: fixed;
@@ -430,7 +390,7 @@ button {
 }
 
 .popup-content h2 {
-    /* Estilo para o título (Adicionar ou Editar) */
+
     position: absolute;
     top: 1rem;
     left: 2rem;
@@ -439,7 +399,6 @@ button {
     font-weight: 500;
     color: #333;
 }
-
 
 .close-btn {
     position: absolute;
@@ -475,7 +434,7 @@ button {
 }
 
 .uploaded-image-preview {
-    width: 150px; /* Tamanho da pré-visualização no pop-up */
+    width: 150px; 
     height: 150px;
     object-fit: contain;
     padding: 5px;
@@ -492,7 +451,7 @@ button {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    margin-top: 2rem; /* Adicionado para afastar dos ícones de fechar/título */
+    margin-top: 2rem; 
 }
 
 .popup-right label {
@@ -550,29 +509,26 @@ button {
     background-color: #555;
 }
 
-/* Container para o link de filtro e o pop-up */
 .filter-container {
     position: relative;
-    z-index: 1000; /* Garante que o pop-up fique acima de outros elementos */
+    z-index: 1000; 
 }
 
-/* O pop-up de filtro posicionado de forma absoluta */
 .filter-popup-content-positioned {
     position: absolute;
-    top: calc(100% + 10px); /* Posiciona mais para baixo, com margem */
+    top: calc(100% + 10px); 
     left: 50%;
     transform: translateX(-50%);
-    
+
     background-color: #F7F7F7;
     padding: 2rem;
     border-radius: 20px;
-    min-width: 354px; /* Largura mínima ajustada para caber o conteúdo */
+    min-width: 354px; 
     max-width: 500px;
-    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45); /* Sombra aumentada */
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45); 
     text-align: center;
 }
 
-/* --- Estilos dos botões de filtro --- */
 .filter-button-group {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -609,7 +565,6 @@ button {
     color: #888;
 }
 
-/* --- Estilos para o Pop-up de Exclusão --- */
 .delete-popup-overlay {
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
@@ -657,7 +612,7 @@ button {
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    
+
     background-color: #f0f0f0;
     border: none;
     padding: 12px 24px;

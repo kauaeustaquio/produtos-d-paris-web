@@ -11,8 +11,8 @@ import {
     CircleCheck,
 } from "lucide-react";
 import "./style.css";
+import Image from "next/image";
 
-// Função utilitária para formatar valores em Reais (BRL)
 const formatarParaBRL = (valor) => {
     return `R$ ${parseFloat(valor).toFixed(2).replace('.', ',')}`;
 };
@@ -32,14 +32,12 @@ export default function TelaEstoque() {
     const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
     const [productToDelete, setProductToDelete] = useState(null);
     const [produtoEditando, setProdutoEditando] = useState(null); 
-    
-    // NOVOS ESTADOS PARA PROMOÇÃO/DESCONTO
-    const [desconto, setDesconto] = useState(0); // 0 a 100 (%)
+    const [desconto, setDesconto] = useState(0);
     const [emPromocao, setEmPromocao] = useState(false);
 
     const categoriasFiltro = ['Todos', 'Casa', 'Carros', 'Piscina', 'Perfumaria'];
 
-    // Valores de desconto de 5 em 5 até 100%
+    //5 em 5 até 100%
     const descontosOpcoes = useMemo(() => {
         const options = [];
         for (let i = 0; i <= 100; i += 5) {
@@ -48,7 +46,6 @@ export default function TelaEstoque() {
         return options;
     }, []);
 
-    // FUNÇÃO QUE CALCULA O NOVO VALOR COM DESCONTO
     const calcularValorComDesconto = (valorOriginal, percentualDesconto) => {
         const valorNumerico = parseFloat(String(valorOriginal).replace(',', '.'));
         if (isNaN(valorNumerico) || percentualDesconto < 0 || percentualDesconto > 100) {
@@ -69,7 +66,6 @@ export default function TelaEstoque() {
         setValor("");
         setImagem(null);
         setImagemPreview(null);
-        // LIMPA NOVOS ESTADOS
         setDesconto(0); 
         setEmPromocao(false);
     };
@@ -81,7 +77,6 @@ export default function TelaEstoque() {
         setValor("");
         setImagem(null);
         setImagemPreview(null);
-        // ESTADOS PADRÃO
         setDesconto(0);
         setEmPromocao(false);
         setPopupAberto(true);
@@ -96,11 +91,9 @@ export default function TelaEstoque() {
         setImagem(produto.imagem);
         setImagemPreview(produto.imagem);
         
-        // RECUPERA ESTADOS DE DESCONTO/PROMOÇÃO DO PRODUTO (Assumindo que existem no objeto `produto`)
         const desc = produto.desconto || 0;
         setDesconto(desc);
-        setEmPromocao(desc > 0); // Define emPromoção se o desconto for maior que 0
-        
+        setEmPromocao(desc > 0); 
         setPopupAberto(true);
     };
 
@@ -112,7 +105,7 @@ export default function TelaEstoque() {
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        if (file) {
+        if (file) { //Criar um novo estado, e mandar a iamgem diretamente, ref={inputFileRef}
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagem(reader.result);
@@ -125,7 +118,6 @@ export default function TelaEstoque() {
         }
     };
 
-    // FUNÇÃO UNIFICADA: Lida com a criação (POST) e atualização (PUT)
     const handleSaveProduct = async () => {
         if (!nome || !categoria || !valor || !imagem) {
             alert("Preencha todos os campos e selecione uma imagem!");
@@ -137,14 +129,13 @@ export default function TelaEstoque() {
         const method = produtoEditando ? 'PUT' : 'POST';
         const url = produtoEditando ? `/api/produtos/${produtoEditando.id}` : '/api/produtos';
 
-        // CORPO DA REQUISIÇÃO: INCLUI DESCONTO E EM_PROMOCAO
         const requestBody = {
             nome, 
             categoria, 
             valor: valorNumerico, 
             imagem,
-            desconto: desconto, // Novo campo
-            emPromocao: emPromocao, // Novo campo
+            desconto: desconto, 
+            emPromocao: emPromocao, 
         };
 
         try {
@@ -329,18 +320,17 @@ export default function TelaEstoque() {
                                     <li key={produto.id} className="product-item">
                                         <div className="product-details-group">
                                             <div className="product-image-card"> 
-                                                <img src={produto.imagem} alt={produto.nome} className="product-image" />
+                                                <Image src="https://ndooujvoe6mofxmx.public.blob.vercel-storage.com/testeimg" width="80" height="80" alt={produto.nome} className="product-image" />
                                             </div>
                                             <div className="product-details-text">
                                                 <h3>{produto.nome}</h3>
-                                                {/* Exibe o status de promoção se houver */}
                                                 {produto.emPromocao && produto.desconto > 0 && (
                                                     <span className="promotion-tag">🔥 {produto.desconto}% OFF</span>
                                                 )}
                                             </div>
                                         </div>
                                         <span className="col-categoria-item">{produto.categoria}</span>
-                                        {/* Exibe o preço com desconto, se em promoção */}
+                        
                                         <span className={`col-valor-item ${produto.emPromocao && produto.desconto > 0 ? 'promo-price' : ''}`}>
                                             {produto.emPromocao && produto.desconto > 0 ? (
                                                 <>
@@ -376,7 +366,7 @@ export default function TelaEstoque() {
 
                     {popupAberto && (
                         <div className="popup-overlay">
-                            <div className="popup-content">                      
+                            <div className="popup-content">
                                 <button className="close-btn" onClick={fecharPopup}>
                                     <CircleX size={28} color="#aaa" />
                                 </button>
@@ -429,7 +419,7 @@ export default function TelaEstoque() {
                                         onChange={(e) => setValor(e.target.value)}
                                     />
                                     
-                                    {/* NOVO CAMPO: DESCONTO E NOVO VALOR */}
+                                
                                     {produtoEditando && (
                                         <>
                                             <label htmlFor="desconto">Desconto ({desconto}%)</label>
@@ -452,7 +442,7 @@ export default function TelaEstoque() {
                                             </p>
                                         </>
                                     )}
-                                    {/* FIM NOVO CAMPO */}
+                                   
 
                                     <button
                                         onClick={handleSaveProduct} 
