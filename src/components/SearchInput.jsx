@@ -1,5 +1,5 @@
 // src/components/SearchInput.jsx
-'use client'; // <-- ESSENCIAL!
+'use client'; 
 
 import { useSearchParams } from 'next/navigation';
 
