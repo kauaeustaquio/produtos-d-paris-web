@@ -75,36 +75,15 @@ button {
     width: auto;
 }
 
-.header-text {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+/* Os seguintes estilos podem ser removidos, pois não estão na imagem final */
+/* .header-text, .icon-text-container, .icon-text-container img, .icon-text-container span */
 
-.icon-text-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
 
-.icon-text-container img {
-    width: 30px;
-    height: 30px;
-}
-
-.icon-text-container span {
-    font-family: 'Urbanist', sans-serif;
-    color: #fff;
-    font-size: 1.1rem;
-    font-weight: 500;
-}
-
-/* --- Estilos para a seção de estoque (ou clientes, neste caso) --- */
+/* --- Estilos para a seção de clientes (conteúdo principal) --- */
 .main-content {
-    padding-top: 5rem; 
+    padding-top: 5rem; /* Espaço para a top-bar fixa */
     width: 100%;
-    max-width: 1200px;
+    max-width: 1200px; /* Largura máxima do conteúdo */
     margin: 0 auto;
 }
 
@@ -115,100 +94,381 @@ button {
     padding: 2rem;
 }
 
+/* ========================================================== */
+/* 1. CABEÇALHO (Clientes) - POSICIONAMENTO CENTRAL */
+/* ========================================================== */
 .stock-header {
+    /* O cabeçalho agora funciona como o elemento central acima do painel de busca */
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 2rem;
-    color: #555;
-    text-align: center;
-}
-
-/* REGRA CORRIGIDA: Aplica a fonte Sansation para o título dentro de .stock-header */
-.stock-header h1 {
-    font-family: 'Sansation', sans-serif;
-    font-weight: 300; /* Peso "Light" */
-    font-size: 2.5rem;
-    margin: 0;
-    color: #333;
-}
-/* Estilos para a barra de pesquisa */
-.search-container {
-    display: flex; /* Alinha o ícone e o input na mesma linha */
-    align-items: center; /* Centraliza verticalmente o conteúdo */
-    background-color: #F7F7F7; /* Cor de fundo */
-    border-radius: 10px; /* Bordas arredondadas */
-    padding: 0.5rem 1rem; /* Espaçamento interno */
-    width: 237px; /* Largura fixa */
-    height: 58px; /* Altura fixa */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave */
-    flex-shrink: 0; /* Impede que o item seja reduzido */
-}
-
-.search-input {
-    border: none; /* Remove a borda padrão do input */
-    background: none; /* Remove a cor de fundo padrão */
-    outline: none; /* Remove o contorno azul ao focar */
-    flex-grow: 1; /* Permite que o input ocupe todo o espaço disponível */
-    padding-left: 10px; /* Espaçamento entre o ícone e o texto */
-    color: #000; /* Cor do texto */
-    font-size: 1rem;
-}
-
-.search-container svg {
-    flex-shrink: 0;
-}
-/* --- Barra de Controles --- */
-.controls-bar {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    width: 1195px;
-    height: 109px;
-    background-color: #fff;
-    padding: 0.75rem 1.5rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    margin-bottom: 2rem;
-    justify-content: space-between; 
-}
-
-.search-container {
-    display: flex;
-    align-items: center;
-    background-color: #F7F7F7;
-    border-radius: 10px;
-    padding: 0.5rem 1rem;
-    width: 237px;
-    height: 58px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    flex-shrink: 0;
-}
-
-.search-input {
-    border: none;
-    background: none;
-    outline: none;
-    flex-grow: 1;
-    padding-left: 10px;
-    color: #000;
-}
-
-.stats-container {
-    display: flex;
-    align-items: center;
     justify-content: center;
-    text-align: center;
-    font-size: 0.8rem;
-    color: #888;
-    height: 100%;
-    padding: 0 1rem;
-    border-left: 1px solid #ddd;
+    padding-top: 20px;
+    padding-bottom: 20px; /* Mais espaço abaixo do ícone */
+    border-bottom: none; 
+    width: 100%; /* Ocupa a largura total para centralizar */
+    margin-bottom: 5px; /* Reduz a margem antes da contagem/busca */
+}
+
+.stock-header img {
+    width: 45px; /* Tamanho do ícone central (Clientes) */
+    height: 45px;
+    margin-bottom: 5px;
+}
+
+.stock-header h1 {
+    /* Esconder o texto "Clientes", pois o ícone o representa */
+    font-size: 0; 
+    margin: 0;
+}
+
+/* ========================================================== */
+/* 2. BARRA DE CONTROLES (Busca, Contagem e Filtro) */
+/* ========================================================== */
+
+/* O container principal que engloba a busca e o filtro, mas não a contagem */
+.new-design-controls {
+    display: flex;
+    flex-direction: column;
+    width: 100%; /* Ocupa a largura total do stock-container */
+    max-width: 1000px; /* Ajuste para centralizar o painel, se necessário */
+    margin-bottom: 20px;
+}
+
+/* Container do Painel Branco */
+.controls-bar-panel {
+    background-color: #fff;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column; /* Coloca contagem e barra de pesquisa/filtro em colunas */
+    width: 100%;
+}
+
+/* Área que contém Pesquisa e Filtro (que devem ficar na mesma linha) */
+.search-filter-row {
+    display: flex;
+    justify-content: space-between; /* Espaça a busca e o filtro */
+    align-items: center;
+    width: 100%;
+}
+
+
+/* --- Contagem de Clientes (acima da barra) --- */
+.stats-container {
+    /* Novo posicionamento da contagem: acima da barra de busca */
+    font-size: 0.9rem;
+    color: #666;
+    text-align: left; /* Alinhado à esquerda como na imagem */
+    width: 100%;
+    margin-bottom: 10px; /* Espaço entre a contagem e a barra de busca */
+    padding: 0 5px; /* Pequeno padding para alinhar com o conteúdo da busca */
 }
 
 .stats-container span {
     font-family: 'Roboto', sans-serif;
     font-weight: 400;
-    line-height: 1.2;
+}
+
+/* --- Campo de Busca (Input) --- */
+.search-container { /* REMOVIDO .wide-search para maior robustez */
+    position: relative;
+    flex-grow: 1; /* Ocupa o máximo de espaço possível (MANTIDO) */
+    /* max-width: 800px; REMOVIDO pois flex-grow já resolve na maioria dos casos */
+    
+    /* ESTILO GROSSO (Correto conforme solicitação) */
+    height: 50px; 
+    background-color: #F7F7F7; 
+    border: none; 
+    border-radius: 10px; 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+    
+    display: flex;
+    align-items: center;
+    padding: 0 15px; 
+}
+
+.search-icon-inside {
+    position: absolute;
+    left: 15px; /* Ajusta a posição do ícone para o novo padding */
+    color: #888;
+    z-index: 2; /* Garante que o ícone esteja acima do input */
+}
+
+.search-input {
+    border: none;
+    background: none; 
+    padding-left: 35px; /* Mantém o espaço para o ícone */
+    height: 100%;
+    font-size: 1rem;
+    width: 100%;
+    outline: none;
+    border-radius: 8px; /* Mantido */
+}
+
+/* --- Botão/Área de Filtro (Direita) --- */
+/* Esconder o <select> original, mantendo a lógica de estado */
+.status-select-hidden {
+    display: none;
+}
+
+.filter-button-group {
+    margin-left: 20px; /* Espaçamento da busca */
+    flex-shrink: 0; /* Impede o encolhimento */
+}
+
+.filter-button {
+    display: flex;
+    flex-direction: column; /* Ícone em cima do texto */
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: #333;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.filter-button svg {
+    /* O ícone do filtro está acima */
+    margin-bottom: 3px;
+    color: #333;
+}
+
+/* ========================================================== */
+/* 3. ESTILOS DA TABELA E LINHAS (Ajustados para Espessura e Posição) */
+/* ========================================================== */
+
+.client-table-container {
+    width: 100%;
+    max-width: 1000px; /* Centraliza a tabela na mesma largura do painel de controle */
+    margin-top: 10px;
+}
+
+.client-list {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Ajuste nos cabeçalhos da tabela */
+.client-list thead th {
+    background-color: transparent; 
+    color: #333;
+    font-weight: 500; /* Levemente mais ousado que o normal */
+    font-size: 0.95rem;
+    padding: 10px 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Largura da coluna Ações (para alinhar o botão à direita) */
+.client-list thead th:last-child {
+    text-align: right;
+    width: 150px; /* Espaço para o botão */
+}
+
+/* Largura da coluna Nome (maior) */
+.client-list thead th:first-child {
+    width: 300px; 
+}
+
+
+/* --- Linhas e Células do Corpo da Tabela (Espessura Reduzida) --- */
+.client-list tbody tr {
+    border-bottom: 1px solid #eee; 
+    height: 55px; /* Altura reduzida */
+}
+
+.client-list td {
+    padding: 8px 10px; /* Padding reduzido */
+    vertical-align: middle;
+    color: #333;
+    font-size: 1rem;
+}
+
+/* Estilo para a coluna de nome (com ícone) */
+.client-name {
+    display: flex; 
+    align-items: center; 
+    font-weight: normal; /* Nome em fonte normal, não negrito */
+}
+
+.icon-profile {
+    color: #040404; /* Cor preta para o ícone */
+    margin-right: 15px; /* Espaçamento entre o ícone e o nome */
+    flex-shrink: 0; 
+}
+
+/* Coluna Ações (para o botão) */
+.client-actions {
+    text-align: right; /* Alinha o conteúdo (botão) à direita */
+}
+
+/* --- Estilos de Status (Manutenção dos Ícones) --- */
+
+.status-active, .status-inactive {
+    display: flex;
+    align-items: center;
+    font-weight: 500; /* Status em negrito */
+    font-size: 0.95rem;
+}
+
+.status-active {
+    color: #1e88e5; /* Um azul limpo, se não for verde */
+}
+
+.status-inactive {
+    color: #cc0000; 
+}
+
+.icon-inline {
+    margin-right: 5px;
+}
+
+
+/* --- Estilos dos Botões de Ação (Ajustados) --- */
+
+.action-button {
+    width: 133px; 
+    height: 38px; /* Altura reduzida para 38px (era 48px) */
+    padding: 0; 
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 50px; 
+    font-weight: 500; /* Meio-termo */
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.btn-inactivate {
+    background-color: #040404; 
+    color: white;
+}
+
+.btn-inactivate:hover {
+    background-color: #222222; 
+}
+
+.btn-activate {
+    background-color: #fff; 
+    color: #040404; 
+    border: 1px solid #040404; 
+}
+
+.btn-activate:hover {
+    background-color: #f0f0f0;
+}
+
+/* Estilo para a seta de ordenação */
+.sort-icon {
+    font-size: 0.7rem; /* Reduz o tamanho */
+    margin-left: 5px;
+    vertical-align: top;
+    color: #666;
+}
+
+/* --- Estilos do Modal de Confirmação --- */
+
+/* 1. Modal Overlay (Fundo) */
+.modal-overlay {
+    /* 1. POSIÇÃO FIXA: Essencial para cobrir a tela inteira */
+    position: fixed; 
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    /* 2. Z-INDEX ALTO: Deve ser maior do que qualquer outro elemento */
+    z-index: 10000; 
+
+    /* Fundo semi-transparente preto (preto total na imagem) */
+    background-color: rgba(0, 0, 0, 0.6); 
+
+    /* Centralizar o modal */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 2. Modal Content (Caixa Branca) */
+.confirmation-modal {
+    /* Fundo ligeiramente cinza claro conforme a imagem */
+    background: #F8F8F8; 
+    padding: 30px 40px; /* Mais padding nas laterais */
+    border-radius: 20px; /* Bordas mais arredondadas (maior raio) */
+    z-index: 10001; 
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1); /* Sombra mais suave */
+    max-width: 450px; /* Aumenta um pouco a largura */
+    width: 90%;
+    text-align: center;
+}
+
+/* 3. Mensagem de Texto */
+.modal-message {
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+    font-size: 1.1rem; /* Tamanho da fonte do texto normal */
+    line-height: 1.5;
+    margin-bottom: 25px; /* Espaçamento antes dos botões */
+    font-weight: 400; /* Texto normal */
+}
+
+/* Estilo para o nome do cliente (Centralizado e em destaque) */
+.cliente-nome {
+    display: block; /* Garante que fique em uma nova linha */
+    font-size: 1.5rem; /* Fonte maior */
+    font-weight: 600; /* Forte (similar ao "Nome do Cliente" entre aspas da imagem) */
+    margin-top: 10px;
+    margin-bottom: 5px;
+    color: #040404;
+}
+
+/* 4. Contêiner dos Botões de Ação */
+.modal-actions {
+    display: flex;
+    justify-content: center; /* Centraliza o grupo de botões */
+    gap: 20px; /* Espaçamento entre os botões */
+    margin-top: 20px;
+}
+
+/* 5. Estilo base dos Botões */
+.modal-button {
+    width: 120px; /* Largura definida para os botões */
+    height: 50px; /* Altura definida para os botões */
+    border-radius: 15px; /* Borda arredondada (Não circular) */
+    font-size: 1.2rem; /* Fonte maior para o texto do botão */
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+/* Botão SIM (Confirmar) - Estilo Inativar/Ativar */
+/* Cor de fundo: Preto/Cinza Escuro */
+.modal-button.btn-yes {
+    background-color: #333333; 
+    color: #ffffff;
+}
+
+/* Botão NÃO (Cancelar) - Estilo Cinza Claro */
+/* Cor de fundo: Cinza muito claro, borda opcional */
+.modal-button.btn-no {
+    background-color: #EAEAEA; 
+    color: #A0A0A0; /* Cor de texto cinza claro */
+}
+
+/* Ajuste específico do hover para o SIM */
+.modal-button.btn-yes:hover {
+    background-color: #040404;
+}
+
+/* Ajuste específico do hover para o NÃO */
+.modal-button.btn-no:hover {
+    background-color: #DCDCDC;
+    color: #888888;
 }

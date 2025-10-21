@@ -1,29 +1,28 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import {
-    CircleX,
-    CirclePlus,
-    Upload,
-    Search,
-    Trash2,
-    Pencil,
-    CircleCheck,
-} from "lucide-react";
+import { CircleX, Search, Trash2, Pencil, CircleCheck } from "lucide-react";
 import "./style.css";
-import Image from "next/image";
+// Importando os novos componentes
+import ProductTableRow from "./pageComponents/ProductTableRow";
+import ProductFormModal from "./pageComponents/ProductFormModal";
+import ConfirmationModal from "./pageComponents/ConfirmationModal";
+import FilterAndStatsBar from "./pageComponents/FilterAndStatsBar";
+import { useBlobUrlCleanup } from './utils/useBlobUrlCleanup'; 
+import { formatarParaBRL, calcularValorComDesconto } from './utils/formatters'; // Assumindo que você separou as funções em formatters.js
 
-const formatarParaBRL = (valor) => {
-    return `R$ ${parseFloat(valor).toFixed(2).replace('.', ',')}`;
-};
 
 export default function TelaEstoque() {
     const [popupAberto, setPopupAberto] = useState(false);
     const [nome, setNome] = useState("");
     const [categoria, setCategoria] = useState("");
     const [valor, setValor] = useState("");
+    
+    // 'imagem' armazena o objeto File
     const [imagem, setImagem] = useState(null); 
+    // 'imagemPreview' armazena a Blob URL ou a URL da imagem existente
     const [imagemPreview, setImagemPreview] = useState(null); 
+    
     const [searchTerm, setSearchTerm] = useState("");
     const [produtos, setProdutos] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -37,7 +36,7 @@ export default function TelaEstoque() {
 
     const categoriasFiltro = ['Todos', 'Casa', 'Carros', 'Piscina', 'Perfumaria'];
 
-    //5 em 5 até 100%
+    // Gera opções de desconto
     const descontosOpcoes = useMemo(() => {
         const options = [];
         for (let i = 0; i <= 100; i += 5) {
@@ -46,19 +45,23 @@ export default function TelaEstoque() {
         return options;
     }, []);
 
-    const calcularValorComDesconto = (valorOriginal, percentualDesconto) => {
-        const valorNumerico = parseFloat(String(valorOriginal).replace(',', '.'));
-        if (isNaN(valorNumerico) || percentualDesconto < 0 || percentualDesconto > 100) {
-            return valorNumerico;
-        }
-        return valorNumerico * (1 - percentualDesconto / 100);
-    };
-
-    const valorComDesconto = useMemo(() => {
-        return calcularValorComDesconto(valor, desconto);
-    }, [valor, desconto]);
-
+    // ----------------------------------------------------
+    // LIMPEZA DE MEMÓRIA (BLOB URL)
+    // Revoga a Blob URL sempre que imagemPreview mudar.
+    useBlobUrlCleanup(imagemPreview); 
+    // ----------------------------------------------------
+    
+    // ----------------------------------------------------
+    // MANIPULADORES DE ESTADO E POPUP
+    // ----------------------------------------------------
+    
     const fecharPopup = () => {
+        // Limpa a Blob URL manualmente antes de fechar o popup,
+        // no caso de um novo arquivo ter sido selecionado e o usuário cancelar.
+        if (imagemPreview && typeof imagemPreview === 'string' && imagemPreview.startsWith('blob:')) {
+            URL.revokeObjectURL(imagemPreview);
+        }
+
         setPopupAberto(false);
         setProdutoEditando(null); 
         setNome("");
@@ -72,6 +75,7 @@ export default function TelaEstoque() {
 
     const abrirPopupAdicionar = () => {
         setProdutoEditando(null); 
+        // Resetamos o estado para o formulário de adição
         setNome("");
         setCategoria("");
         setValor("");
@@ -88,8 +92,10 @@ export default function TelaEstoque() {
         setNome(produto.nome);
         setCategoria(produto.categoria);
         setValor(String(produto.valor).replace('.', ',')); 
-        setImagem(produto.imagem);
-        setImagemPreview(produto.imagem);
+        
+        // Se a imagem for uma URL de API (string), usamos ela, caso contrário, null (o usuário precisará enviar um novo File)
+        setImagem(typeof produto.imagem === 'string' ? null : produto.imagem); 
+        setImagemPreview(produto.imagem); // Exibe a URL de imagem existente
         
         const desc = produto.desconto || 0;
         setDesconto(desc);
@@ -97,30 +103,38 @@ export default function TelaEstoque() {
         setPopupAberto(true);
     };
 
-    const handleDiscountChange = (newDesconto) => {
-        const newDesc = parseInt(newDesconto);
-        setDesconto(newDesc);
-        setEmPromocao(newDesc > 0);
-    };
-
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        if (file) { //Criar um novo estado, e mandar a iamgem diretamente, ref={inputFileRef}
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagem(reader.result);
-                setImagemPreview(reader.result);
-            };
-            reader.readAsDataURL(file);
+
+        if (file) {
+            setImagem(file); // Armazena o objeto File original
+            
+            // Cria uma Blob URL para o preview (Mais eficiente que Base64)
+            const fileURL = URL.createObjectURL(file);
+            
+            // O cleanup do hook 'useBlobUrlCleanup' irá revogar a URL anterior
+            setImagemPreview(fileURL); 
+
         } else {
             setImagem(null);
             setImagemPreview(null);
         }
     };
+    
+    // ----------------------------------------------------
+    // LÓGICA DE API
+    // ----------------------------------------------------
 
     const handleSaveProduct = async () => {
-        if (!nome || !categoria || !valor || !imagem) {
-            alert("Preencha todos os campos e selecione uma imagem!");
+        // Verifica se há nome, categoria e valor
+        if (!nome || !categoria || !valor) {
+            alert("Preencha todos os campos.");
+            return;
+        }
+
+        // Se estiver adicionando, a imagem é obrigatória
+        if (!produtoEditando && !imagem) {
+            alert("Selecione uma imagem para o novo produto!");
             return;
         }
         
@@ -129,22 +143,29 @@ export default function TelaEstoque() {
         const method = produtoEditando ? 'PUT' : 'POST';
         const url = produtoEditando ? `/api/produtos/${produtoEditando.id}` : '/api/produtos';
 
-        const requestBody = {
-            nome, 
-            categoria, 
-            valor: valorNumerico, 
-            imagem,
-            desconto: desconto, 
-            emPromocao: emPromocao, 
-        };
+        // Usando FormData para enviar dados e o objeto File
+        const formData = new FormData();
+        formData.append('nome', nome);
+        formData.append('categoria', categoria);
+        formData.append('valor', valorNumerico);
+        formData.append('desconto', desconto);
+        formData.append('emPromocao', emPromocao);
+        
+        // Só adiciona a imagem se for um novo File.
+        // Se for uma string (URL de imagem existente), o backend deve saber como lidar.
+        if (imagem instanceof File) {
+            formData.append('imagem', imagem); 
+        }
+
+        if (produtoEditando) {
+            formData.append('id', produtoEditando.id);
+        }
 
         try {
             const res = await fetch(url, {
                 method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody),
+                // **IMPORTANTE:** Não defina o cabeçalho 'Content-Type' para FormData
+                body: formData, 
             });
 
             if (!res.ok) {
@@ -157,11 +178,9 @@ export default function TelaEstoque() {
             fetchProdutos();
         } catch (error) {
             console.error(`Falha ao ${produtoEditando ? 'atualizar' : 'enviar'} produto:`, error);
-            alert(`Não foi possível ${produtoEditando ? 'atualizar' : 'adicionar'} o produto. Tente novamente. Detalhe: ${error.message}`);
+            alert(`Não foi possível ${produtoEditando ? 'atualizar' : 'adicionar'} o produto. Detalhe: ${error.message}`);
         }
     };
-    
-    const isFormValid = nome && categoria && valor && imagem;
     
     const fetchProdutos = async () => {
         setLoading(true);
@@ -225,83 +244,41 @@ export default function TelaEstoque() {
 
     return (
         <>
+            {/* BARRA DE NAVEGAÇÃO SUPERIOR */}
             <div className="top-bar">
                 <a href="/telaPrincipal" className="home-botao">
                     <img src="/img/home-botao.png" alt="Ícone de Home" style={{ width: '40px', height: '40px' }} />
                 </a>
-            
-                    <div className="right-icons">
-                        <a href="telaInfo" className="info-icon">
-                            <img src="/img/info-botao.png" alt="Ícone de Informações" />
-                        </a>
-                        <a href="telaUsuario" className="user-icon">
-                            <img src="/img/usuario-icone-branco.png" alt="Usuário"/>
-                        </a>
-                    </div>
+                
+                <div className="right-icons">
+                    <a href="telaInfo" className="info-icon">
+                        <img src="/img/info-botao.png" alt="Ícone de Informações" />
+                    </a>
+                    <a href="telaUsuario" className="user-icon">
+                        <img src="/img/usuario-icone-branco.png" alt="Usuário"/>
+                    </a>
+                </div>
             </div>
             
             <div className="main-content">
-                <div className="stock-container">
-                    <header className="stock-header">
+                <div className="stock-container"> {/* <-- CORRIGIDO AQUI */}
+                    <header className="stock-header"> {/* <-- CORRIGIDO AQUI */}
                         <img src="/img/estoque-icone.png" alt="Ícone de Estoque" />
                         <h1>Gerenciar estoque</h1>
                     </header>
 
-                    <div className="controls-bar">
-                        <div className="search-container">
-                            <Search size={20} color="#888" />
-                            <input
-                                type="text"
-                                placeholder="Pesquisar produto..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="search-input"
-                            />
-                        </div>
-                        
-                        <div className="stats-container">
-                            <span>{produtos.length} produtos foram <br/> cadastrados</span>
-                        </div>
-                        
-                        <div className="filter-container">
-                            <a href="#" className="filter-link" onClick={() => setIsFilterPopupOpen(true)}>
-                                <img src="/img/Filter.png" alt="Ícone de Filtro" />
-                                <span>Filtrar</span>
-                            </a>
-
-                            {isFilterPopupOpen && (
-                                <div className="filter-popup-content-positioned">
-                                    <button className="filter-close-btn" onClick={() => setIsFilterPopupOpen(false)}>
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M18 6L6 18M6 6L18 18" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                        </svg>
-                                    </button>
-                                    <h2>Selecionar...</h2>
-                                    <div className="filter-button-group">
-                                        {categoriasFiltro.map((category) => (
-                                            <button
-                                                key={category}
-                                                className={`filter-btn ${activeFilter === category ? 'active' : ''}`}
-                                                onClick={() => handleFilterClick(category)}
-                                            >
-                                                {category}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        <a href="#" className="categories-link">
-                            <img src="/img/Categorias.png" alt="Ícone de Categorias" />
-                            <span>Categorias</span>
-                        </a>
-
-                        <button className="new-product-btn" onClick={abrirPopupAdicionar}>
-                            <span className="btn-text">Novo produto</span>
-                            <img src="/img/adicionar-botao.png" alt="Ícone de adicionar" />
-                        </button>
-                    </div>
+                    {/* Componente: FilterAndStatsBar */}
+                    <FilterAndStatsBar
+                        searchTerm={searchTerm}
+                        setSearchTerm={setSearchTerm}
+                        produtosCount={produtos.length}
+                        isFilterPopupOpen={isFilterPopupOpen}
+                        setIsFilterPopupOpen={setIsFilterPopupOpen}
+                        activeFilter={activeFilter}
+                        handleFilterClick={handleFilterClick}
+                        categoriasFiltro={categoriasFiltro}
+                        onAddProduct={abrirPopupAdicionar}
+                    />
 
                     <div className="product-table-container">
                         <div className="product-table-header">
@@ -316,47 +293,14 @@ export default function TelaEstoque() {
                             <p>Carregando...</p>
                         ) : produtos.length > 0 ? (
                             <ul className="product-list">
+                                {/* Componente: ProductTableRow */}
                                 {produtos.map(produto => (
-                                    <li key={produto.id} className="product-item">
-                                        <div className="product-details-group">
-                                            <div className="product-image-card"> 
-                                                <Image src="https://ndooujvoe6mofxmx.public.blob.vercel-storage.com/testeimg" width="80" height="80" alt={produto.nome} className="product-image" />
-                                            </div>
-                                            <div className="product-details-text">
-                                                <h3>{produto.nome}</h3>
-                                                {produto.emPromocao && produto.desconto > 0 && (
-                                                    <span className="promotion-tag">🔥 {produto.desconto}% OFF</span>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <span className="col-categoria-item">{produto.categoria}</span>
-                        
-                                        <span className={`col-valor-item ${produto.emPromocao && produto.desconto > 0 ? 'promo-price' : ''}`}>
-                                            {produto.emPromocao && produto.desconto > 0 ? (
-                                                <>
-                                                    <del>{formatarParaBRL(produto.valor)}</del>
-                                                    <br/>
-                                                    <strong>{formatarParaBRL(calcularValorComDesconto(produto.valor, produto.desconto))}</strong>
-                                                </>
-                                            ) : (
-                                                formatarParaBRL(produto.valor)
-                                            )}
-                                        </span>
-                                        <div className="product-actions">
-                                            <button 
-                                                className="action-btn delete-btn"
-                                                onClick={() => handleDeleteClick(produto.id)}
-                                            >
-                                                <Trash2 size={24} color="#000" />
-                                            </button>
-                                            <button 
-                                                className="action-btn edit-btn"
-                                                onClick={() => abrirPopupEdicao(produto)} 
-                                            >
-                                                <Pencil size={24} color="#000" />
-                                            </button>
-                                        </div>
-                                    </li>
+                                    <ProductTableRow
+                                        key={produto.id}
+                                        produto={produto}
+                                        onEdit={abrirPopupEdicao}
+                                        onDelete={handleDeleteClick}
+                                    />
                                 ))}
                             </ul>
                         ) : (
@@ -364,121 +308,31 @@ export default function TelaEstoque() {
                         )}
                     </div>
 
+                    {/* Componente: ProductFormModal */}
                     {popupAberto && (
-                        <div className="popup-overlay">
-                            <div className="popup-content">
-                                <button className="close-btn" onClick={fecharPopup}>
-                                    <CircleX size={28} color="#aaa" />
-                                </button>
-                                
-                                <div className="popup-left">
-                                    <label className="upload-label">
-                                        <input type="file" onChange={handleFileChange} />
-                                        {imagemPreview ? (
-                                            <img src={imagemPreview} alt="Pré-visualização do produto" className="uploaded-image-preview" />
-                                        ) : (
-                                            <>
-                                                <Upload size={48} color="#888" />
-                                                <span>Selecione a imagem do produto</span>
-                                            </>
-                                        )}
-                                    </label>
-                                </div>
-                                
-                                <div className="popup-right">
-                                    <label htmlFor="nome">Nome do produto:</label>
-                                    <input
-                                        id="nome"
-                                        type="text"
-                                        placeholder="Ex. Veja Limpeza Multiuso 500ml"
-                                        value={nome}
-                                        onChange={(e) => setNome(e.target.value)}
-                                    />
-
-                                    <label htmlFor="categoria">Categoria</label>
-                                    <select
-                                        id="categoria"
-                                        value={categoria}
-                                        onChange={(e) => setCategoria(e.target.value)}
-                                    >
-                                        <option value="" disabled>Selecionar...</option>
-                                        <option value="Casa">Casa</option>
-                                        <option value="Carros">Carros</option>
-                                        <option value="Piscina">Piscina</option>
-                                        <option value="Cozinhas">Cozinhas</option>
-                                        <option value="Perfumaria">Perfumaria</option>
-                                        <option value="--">-</option>
-                                    </select>
-
-                                    <label htmlFor="valor">Valor</label>
-                                    <input
-                                        id="valor"
-                                        type="text"
-                                        placeholder="Ex: 12,00"
-                                        value={valor}
-                                        onChange={(e) => setValor(e.target.value)}
-                                    />
-                                    
-                                
-                                    {produtoEditando && (
-                                        <>
-                                            <label htmlFor="desconto">Desconto ({desconto}%)</label>
-                                            <select
-                                                id="desconto"
-                                                value={desconto}
-                                                onChange={(e) => handleDiscountChange(e.target.value)}
-                                                className={emPromocao ? 'em-promocao-select' : ''}
-                                            >
-                                                {descontosOpcoes.map(d => (
-                                                    <option key={d} value={d}>{d}%</option>
-                                                ))}
-                                            </select>
-                                            
-                                            <p className="promocao-status">
-                                                Status: {emPromocao ? 
-                                                    `Em Promoção. Novo Valor: ${formatarParaBRL(valorComDesconto)}` : 
-                                                    `Promoção Inativa. Valor Original: ${formatarParaBRL(valorComDesconto)}`
-                                                }
-                                            </p>
-                                        </>
-                                    )}
-                                   
-
-                                    <button
-                                        onClick={handleSaveProduct} 
-                                        className={`submit-btn ${isFormValid ? "enabled" : ""}`}
-                                        disabled={!isFormValid}
-                                    >
-                                        {produtoEditando ? 'Atualizar' : 'Adicionar'} 
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        <ProductFormModal
+                            produtoEditando={produtoEditando}
+                            onClose={fecharPopup}
+                            onSave={handleSaveProduct}
+                            nome={nome} setNome={setNome}
+                            categoria={categoria} setCategoria={setCategoria}
+                            valor={valor} setValor={setValor}
+                            imagemPreview={imagemPreview}
+                            handleFileChange={handleFileChange}
+                            desconto={desconto} setDesconto={setDesconto}
+                            emPromocao={emPromocao} setEmPromocao={setEmPromocao}
+                            descontosOpcoes={descontosOpcoes}
+                        />
                     )}
 
+                    {/* Componente: ConfirmationModal */}
                     {isDeletePopupOpen && (
-                        <div className="popup-overlay delete-popup-overlay">
-                            <div className="popup-content delete-popup-content">
-                                <h2 className="delete-title">Tem certeza que deseja deletar este produto?</h2>
-                                <p className="delete-message">Essa ação não pode ser desfeita.</p>
-                                <div className="delete-buttons">
-                                    <button 
-                                        onClick={handleDeleteCancel} 
-                                        className="delete-cancel-btn"
-                                    >
-                                        <CircleX size={32} color="#dc3545" />
-                                        <span>Cancelar</span>
-                                    </button>
-                                    <button 
-                                        onClick={handleDeleteConfirm} 
-                                        className="delete-confirm-btn"
-                                    >
-                                        <CircleCheck size={32} color="#28a745" />
-                                        <span>Deletar</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        <ConfirmationModal
+                            title="Tem certeza que deseja deletar este produto?"
+                            message="Essa ação não pode ser desfeita."
+                            onCancel={handleDeleteCancel}
+                            onConfirm={handleDeleteConfirm}
+                        />
                     )}
                 </div>
             </div>

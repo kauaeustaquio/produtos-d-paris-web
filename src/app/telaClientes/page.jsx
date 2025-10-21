@@ -2,98 +2,163 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Search, Phone, Mail } from "lucide-react";
-import "./style.css"; // Certifique-se de que este caminho está correto
+import { Search } from "lucide-react";
+import ClienteTable from "./componentsClientes/ClienteTable"; 
+import ConfirmationModal from "./componentsClientes/ConfirmationModal"; // Importa o modal
+import "./style.css"; 
 
-// Função para buscar os clientes da API (assume que a rota /api/clientes está funcionando)
-async function getClientes(buscaTermo = '') {
-    // CORREÇÃO: Usar apenas o caminho relativo para chamadas do lado do cliente.
+// Valores de filtro: 'todos' | 'ativo' | 'inativo'
+const INITIAL_STATUS_FILTER = 'todos'; 
+
+// =========================================================================
+// FUNÇÃO DE API PARA BUSCAR CLIENTES
+// (Mantida, sem alterações)
+// =========================================================================
+async function getClientes(buscaTermo = '', statusFiltro = INITIAL_STATUS_FILTER) {
     const path = '/api/clientes';
+    const params = new URLSearchParams();
 
-    // Constrói a URL usando o caminho relativo. O navegador infere o domínio (localhost ou produção).
-    const url = buscaTermo 
-        ? `${path}?search=${encodeURIComponent(buscaTermo)}`
-        : path;
+    if (buscaTermo) {
+        params.set('search', buscaTermo);
+    }
+    
+    if (statusFiltro !== INITIAL_STATUS_FILTER) {
+        params.set('status', statusFiltro); 
+    }
+    
+    const url = `${path}?${params.toString()}`;
 
     try {
-        const res = await fetch(url, {
-            cache: 'no-store' 
-        });
-
+        const res = await fetch(url, { cache: 'no-store' });
         if (!res.ok) {
-            console.error(`Status HTTP: ${res.status}`);
-            // Retorna um erro amigável para o usuário
-            return { error: `Falha na busca (Status: ${res.status}). Verifique a rota da API.`, data: [] }; 
+            const errorText = await res.text();
+            return { error: `Falha na busca (Status: ${res.status}). Detalhes: ${errorText.substring(0, 100)}`, data: [] }; 
         }
-
         const data = await res.json();
-        // A API deve retornar um objeto com uma propriedade 'data' que é o array de clientes,
-        // mas aqui estamos assumindo que 'data' *é* o array, se não houver um 'error'.
-        // Se a API retornar { clientes: [...] }, ajuste para 'return { data: data.clientes }'
         return { data };
-
     } catch (error) {
-        // Este bloco é atingido em caso de erro de rede real (DNS, conexão recusada)
-        console.error("Erro ao carregar clientes:", error.message);
-        return { error: 'Erro de rede ao buscar clientes.', data: [] };
+        return { error: 'Erro de rede ao buscar clientes. Tente novamente.', data: [] };
     }
 }
 
+// =========================================================================
+// FUNÇÃO DE API PARA ATUALIZAR STATUS (Movida para o componente principal)
+// =========================================================================
+async function toggleClienteStatus(clienteId, novoStatus) {
+    const url = `/api/clientes/${clienteId}/status`; 
 
+    const res = await fetch(url, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ is_active: novoStatus }),
+    });
+
+    if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Falha ao alterar status. Detalhes: ${errorText}`);
+    }
+
+    return res.json();
+}
+
+
+// =========================================================================
+// COMPONENTE PRINCIPAL (TELA)
+// =========================================================================
 export default function TelaClientes() {
-    // Estados para a busca, a lista e o estado de carregamento
     const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState(INITIAL_STATUS_FILTER);
+    
     const [clientes, setClientes] = useState([]); 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Função para buscar os clientes, memorizada para evitar recriação desnecessária
-    const fetchClientes = useCallback(async (busca) => {
+    // NOVO ESTADO: Armazena o cliente e a ação pendente para o modal
+    const [pendingConfirmation, setPendingConfirmation] = useState(null); // { cliente: {..}, action: 'ativar' | 'inativar' }
+
+
+    const fetchClientes = useCallback(async (busca, status) => {
         setLoading(true);
         setError(null);
         
-        const result = await getClientes(busca);
+        const result = await getClientes(busca, status);
         
         if (result.error) {
             setError(result.error);
             setClientes([]);
         } else {
-            // Garante que o estado seja atualizado com o array de clientes
             setClientes(result.data || []); 
         }
         setLoading(false);
     }, []);
 
-    // Efeito para acionar a busca sempre que o termo de busca mudar (com Debounce)
+    // Função para ser passada para os subcomponentes para forçar a atualização
+    const handleClienteStatusChange = () => {
+        // Após a mudança de status, remove a confirmação e refaz a busca
+        setPendingConfirmation(null);
+        fetchClientes(searchTerm, statusFilter);
+    };
+    
+    // 1. Função chamada pelo botão na tabela
+    const handleConfirmRequest = (cliente, action) => {
+        // Define o estado para mostrar o modal
+        setPendingConfirmation({ cliente, action });
+    };
+
+    // 2. Função chamada ao clicar em 'Sim' no modal
+    const handleModalConfirm = async (cliente, action) => {
+        const novoStatus = action === 'ativar';
+        
+        try {
+            // Lógica de atualização da API
+            await toggleClienteStatus(cliente.id, novoStatus);
+            handleClienteStatusChange(); // Refaz a busca
+        } catch (err) {
+            setError(`Erro ao finalizar a ação: ${err.message}`);
+            setPendingConfirmation(null); // Fecha o modal
+        }
+    };
+
+    // 3. Função chamada ao clicar em 'Não' no modal
+    const handleModalCancel = () => {
+        setPendingConfirmation(null); // Fecha o modal sem ação
+    };
+
+
     useEffect(() => {
         const handler = setTimeout(() => {
-            fetchClientes(searchTerm);
-        }, 300);
+            fetchClientes(searchTerm, statusFilter);
+        }, 300); 
 
-        // Função de limpeza para cancelar o timer se o termo mudar novamente
         return () => {
             clearTimeout(handler);
         };
-    }, [searchTerm, fetchClientes]);
+    }, [searchTerm, statusFilter, fetchClientes]);
 
 
     return (
-        // OTIMIZAÇÃO: Usando uma div raiz para melhor estrutura de layout/estilo
         <div className="tela-clientes-wrapper">
+            {/* -------------------- MODAL DE CONFIRMAÇÃO -------------------- */}
+            {pendingConfirmation && (
+                <ConfirmationModal
+                    cliente={pendingConfirmation.cliente}
+                    action={pendingConfirmation.action}
+                    onConfirm={handleModalConfirm}
+                    onCancel={handleModalCancel}
+                />
+            )}
+            {/* -------------------------------------------------------------- */}
+            
             <div className="top-bar">
-                {/* 1. Elemento da Esquerda: Home */}
                 <a href="/telaPrincipal" className="home-botao">
                     <img src="/img/home-botao.png" alt="Ícone de Home" style={{ width: '40px', height: '40px' }} />
                 </a>
-                
-                {/* 2. Elemento da Direita: Grupo de Info e Usuário */}
                 <div className="right-icons-group"> 
-                    {/* Ícone de Informações */}
                     <a href="telaInfo" className="info-icon">
                         <img src="/img/info-botao.png" alt="Ícone de Informações" style={{ width: '40px', height: '40px' }} />
                     </a>
-                    
-                    {/* Ícone do Usuário */}
                     <a href="telaUsuario" className="user-icon">
                         <img src="/img/usuario-icone-branco.png" alt="Usuário"/>
                     </a>
@@ -107,7 +172,7 @@ export default function TelaClientes() {
                         <h1>Clientes</h1>
                     </header>
 
-                    {/* Barra de pesquisa e contagem de clientes */}
+                    {/* Barra de Controles (Filtros) */}
                     <div className="controls-bar">
                         <div className="search-container">
                             <Search size={20} color="#888" />
@@ -120,57 +185,36 @@ export default function TelaClientes() {
                                 disabled={loading}
                             />
                         </div>
+
+                        <div className="status-filter-container">
+                            <label htmlFor="status-select">Status:</label>
+                            <select
+                                id="status-select"
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)} 
+                                disabled={loading}
+                                className="status-select"
+                            >
+                                <option value="todos">Todos</option>
+                                <option value="ativo">Ativo</option>
+                                <option value="inativo">Inativo</option>
+                            </select>
+                        </div>
                         
                         <div className="stats-container">
                             <span>**{clientes.length} clientes** {loading ? 'sendo contados' : 'encontrados'}</span>
                         </div>
                     </div>
 
-                    {/* Área de Exibição da Tabela/Mensagens */}
-                    <div className="client-table-container">
-                        {/* Mensagem de Erro (se houver) */}
-                        {error && (
-                            <p className="error-message" style={{ color: 'red', textAlign: 'center', padding: '10px', fontWeight: 'bold' }}>
-                                Erro ao carregar dados: {error}
-                            </p>
-                        )}
-                        
-                        {/* Mensagem de Loading ou Tabela */}
-                        {loading && !error ? (
-                            <div className="loading-message">Carregando clientes...</div>
-                        ) : (
-                            <table className="client-list">
-                                <thead>
-                                    <tr>
-                                        <th>Nome</th>
-                                        <th>Telefone</th>
-                                        <th>Email</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {clientes.length === 0 ? (
-                                        <tr>
-                                            {/* Colspan ajustado para 3 colunas */}
-                                            <td colSpan="3" className="no-clients-message">
-                                                {searchTerm 
-                                                    ? `Nenhum cliente encontrado para "${searchTerm}".` 
-                                                    : "Nenhum cliente cadastrado."
-                                                }
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        clientes.map((cliente) => (
-                                            <tr key={cliente.id}> {/* Usa o ID retornado pela API como chave */}
-                                                <td className="client-name">{cliente.nome}</td>
-                                                <td><Phone size={14} className="icon-inline" /> {cliente.telefone || 'N/A'}</td>
-                                                <td><Mail size={14} className="icon-inline" /> {cliente.email || 'N/A'}</td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
+                    {/* Componente Modularizado da Tabela */}
+                    <ClienteTable
+                        clientes={clientes}
+                        loading={loading}
+                        error={error}
+                        searchTerm={searchTerm}
+                        statusFilter={statusFilter}
+                        onConfirmRequest={handleConfirmRequest} // Passa a função para abrir o modal
+                    />
                 </div>
             </div>
         </div>

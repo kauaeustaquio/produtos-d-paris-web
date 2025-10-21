@@ -13,7 +13,7 @@ export default function PaginaLogin() {
     event.preventDefault();
 
     try {
-      const response = await fetch('/api/login', { 
+      const response = await fetch('/api/usuario', { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
