@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { signIn, useSession } from 'next'
 import { Mail, Eye, EyeOff } from 'lucide-react';
 import "./style.css"; // Certifique-se de que o caminho para o CSS está correto
 
