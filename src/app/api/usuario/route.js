@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import db from "@/lib/db";
 import bcrypt from 'bcryptjs'; 
 
-const saltRounds = 10; 
+const saltRounds = 12; 
 
 export async function POST(request) {
   try {
@@ -15,7 +15,7 @@ export async function POST(request) {
     }
 
     //hash da senha
-    const hashedPassword = await bcrypt.hash(senha, saltRounds);
+    const hashedPassword = await bcrypt.hash(senha, 12);
 
     //usuário já existe?
     const usuarioExistente = await db.query('SELECT email FROM usuario WHERE email = $1', [email]);
