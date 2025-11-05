@@ -4,31 +4,28 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import pool from "@/lib/db";
 
-// Fazer a busca do usuário para utilização futura
+// Fazer a busca do usuário e mapear 'rule' para 'role'
 async function getUserByEmail(email) {
     const client = await pool.connect();
-    // 💡 MUDANÇA: Altera a tabela de 'consumidor' para 'usuario'
+    // 🔍 BUSCA POR 'rule' no banco
     const res = await client.query(
         "SELECT id, nome, email, senha_hash, rule FROM usuario WHERE email = $1",
         [email]
     );
     client.release();
-    // 💡 MUDANÇA: O campo 'role' na tabela 'usuario' deve ser retornado como 'role'
-    // Aqui assumimos que a coluna no banco é 'rule' (conforme o script SQL)
+    
     const user = res.rows[0];
     if (user) {
-        // Mapeia 'rule' do banco para 'role' que é a convenção na aplicação
+        // 🔄 MAPEAMENTO: Transforma 'rule' (do banco) em 'role' (para o NextAuth)
         user.role = user.rule; 
+        delete user.rule; // Remove o campo 'rule' para usar apenas 'role'
     }
     return user || null;
 }
 
-// Criaremos a sessão que será um JWT assinado e que será guardado em cookie httpOnly
-// Se você está usando NextAuth v4, a coluna 'rule' do seu banco deve ser mapeada para 'role' nos objetos de token/session.
-
 const authOptions = {
     session: { strategy: "jwt" },
-    providers: [ // Trata-se de como o usuário pode entrar (Google, Facebook, e-mail/senha, enre outros).
+    providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET
@@ -41,49 +38,45 @@ const authOptions = {
             },
             async authorize(credentials) {
                 const { email, senha } = credentials;
-                // 💡 Nota: getUserByEmail já retorna o 'role' (mapeado de 'rule')
+                // getUserByEmail já retorna 'role' (mapeado)
                 const user = await getUserByEmail(email); 
+                
                 if (!user || !user.senha_hash) return null;
                 const ok = await compare(senha, user.senha_hash);
                 if (!ok) return null;
-                // O objeto que for retornado vai para o token/session (o campo 'role' está correto aqui)
+                
+                // Retorna o objeto com a propriedade 'role'
                 return { id: user.id, name: user.nome, email: user.email, role: user.role };
             }
         })
     ],
 
-    /*
-    Callbacks são funções que o nextAuth utiliza em certos momentos do fluxo de autenticação, ous
-    quais permitem personalizar o JWT, a sessão, como o login vai funcionar...
-    */
     callbacks: {
-        // Vamos colocar role e id no JWT para informar os papeis do usuário
         async jwt({ token, user, account, profile }) {
-            // Primeira vez que loga por OAuth
-            if (account && profile && !user) {
-                // É precio vincular ou auto-criar um usuário no banco (opcional)
+            // Lógica para Login com Google/OAuth
+            if (account && profile) {
                 const existing = await getUserByEmail(profile.email);
                 if (existing) {
-                    // 💡 Nota: getUserByEmail já retorna 'role' (mapeado de 'rule')
                     token.role = existing.role; 
                     token.id = existing.id;
                     token.name = existing.nome;
                 } else {
-                    // Exemplo: cria como "admin" na nova tabela (conforme a sua necessidade)
+                    // Cria o novo usuário OAuth no banco
                     const client = await pool.connect();
-                    // 💡 MUDANÇA: Altera a tabela de 'consumidor' para 'usuario'
-                    // 💡 MUDANÇA: O campo no banco é 'rule', então usamos 'rule' no INSERT
+                    // 💾 INSERT usando a coluna 'rule'
                     const res = await client.query(
                         "INSERT INTO usuario (nome, email, rule) VALUES ($1, $2, $3) RETURNING id, rule",
-                        [profile.name ?? "Usuário", profile.email, "admin"] // 💡 Exemplo de regra padrão
+                        [profile.name ?? "Usuário", profile.email, "cliente"] // Defina o 'rule' padrão
                     );
                     client.release();
                     token.id = res.rows[0].id;
-                    // 💡 MUDANÇA: Mapeia o campo 'rule' do banco para 'role' do token
+                    // 🔄 MAPEAMENTO: Salva como 'role' no token
                     token.role = res.rows[0].rule; 
+                    token.name = profile.name;
                 }
             }
 
+            // Para login com credenciais (e qualquer user)
             if (user) {
                 token.id = user.id;
                 token.role = user.role;
@@ -91,7 +84,8 @@ const authOptions = {
             }
             return token;
         },
-        // É necessário para coloca dados úteis na sessão (disponível no cliente)
+
+        // É necessário para expor 'role' na sessão do cliente (useSession())
         async session({ session, token }) {
             if (token) {
                 session.user.id = token.id;
@@ -101,12 +95,12 @@ const authOptions = {
             return session;
         }
     },
+    
     pages: {
-        // Aqui vc coloca a sua página de login customizada
         signIn: "/novoLogin"
     }
 };
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
-export { authOptions }; // para usar em APIs protegidas
+export { authOptions };
