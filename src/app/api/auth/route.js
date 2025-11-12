@@ -4,10 +4,9 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import pool from "@/lib/db";
 
-// Fazer a busca do usuário e mapear 'rule' para 'role'
+
 async function getUserByEmail(email) {
     const client = await pool.connect();
-    // 🔍 BUSCA POR 'rule' no banco
     const res = await client.query(
         "SELECT id, nome, email, senha_hash, rule FROM usuario WHERE email = $1",
         [email]
@@ -16,9 +15,9 @@ async function getUserByEmail(email) {
     
     const user = res.rows[0];
     if (user) {
-        // 🔄 MAPEAMENTO: Transforma 'rule' (do banco) em 'role' (para o NextAuth)
+        //'rule' do bd para 'role' do Next
         user.role = user.rule; 
-        delete user.rule; // Remove o campo 'rule' para usar apenas 'role'
+        delete user.rule; 
     }
     return user || null;
 }
@@ -38,14 +37,12 @@ const authOptions = {
             },
             async authorize(credentials) {
                 const { email, senha } = credentials;
-                // getUserByEmail já retorna 'role' (mapeado)
                 const user = await getUserByEmail(email); 
                 
                 if (!user || !user.senha_hash) return null;
                 const ok = await compare(senha, user.senha_hash);
                 if (!ok) return null;
                 
-                // Retorna o objeto com a propriedade 'role'
                 return { id: user.id, name: user.nome, email: user.email, role: user.role };
             }
         })
@@ -53,7 +50,7 @@ const authOptions = {
 
     callbacks: {
         async jwt({ token, user, account, profile }) {
-            // Lógica para Login com Google/OAuth
+            //Google/OAuth (login)
             if (account && profile) {
                 const existing = await getUserByEmail(profile.email);
                 if (existing) {
@@ -61,22 +58,19 @@ const authOptions = {
                     token.id = existing.id;
                     token.name = existing.nome;
                 } else {
-                    // Cria o novo usuário OAuth no banco
+                    //Novo usuário OAuth no banco
                     const client = await pool.connect();
-                    // 💾 INSERT usando a coluna 'rule'
                     const res = await client.query(
                         "INSERT INTO usuario (nome, email, rule) VALUES ($1, $2, $3) RETURNING id, rule",
-                        [profile.name ?? "Usuário", profile.email, "cliente"] // Defina o 'rule' padrão
+                        [profile.name ?? "Usuário", profile.email, "cliente"] 
                     );
                     client.release();
                     token.id = res.rows[0].id;
-                    // 🔄 MAPEAMENTO: Salva como 'role' no token
                     token.role = res.rows[0].rule; 
                     token.name = profile.name;
                 }
             }
 
-            // Para login com credenciais (e qualquer user)
             if (user) {
                 token.id = user.id;
                 token.role = user.role;
@@ -85,7 +79,6 @@ const authOptions = {
             return token;
         },
 
-        // É necessário para expor 'role' na sessão do cliente (useSession())
         async session({ session, token }) {
             if (token) {
                 session.user.id = token.id;

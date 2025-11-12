@@ -1,7 +1,7 @@
 // src/app/api/autenticacao/signup/route.js
 
 import { NextResponse } from 'next/server';
-import pool from "@/lib/db"; // Ajuste o caminho se necessário
+import pool from "@/lib/db"; 
 import bcrypt from 'bcryptjs';
 
 export async function POST(request) {
@@ -29,7 +29,7 @@ export async function POST(request) {
     
     const senhaHash = await bcrypt.hash(senha, 10);
     
-    // 2. Inserir na tabela 'usuario' com 'telefone' e 'admin' rule
+    //Insere na tabela 'usuario' com 'telefone' e 'admin' rule
     const queryText = `
         INSERT INTO usuario (nome, email, telefone, senha_hash, rule) 
         VALUES ($1, $2, $3, $4, $5) 
@@ -39,9 +39,9 @@ export async function POST(request) {
     const res = await client.query(queryText, [
         nome, 
         email, 
-        telefone, // 🟢 Telefone (limpo)
+        telefone, 
         senhaHash, 
-        'admin' // 🟢 Rule definido como 'admin'
+        'admin' 
     ]);
     
     client.release();
@@ -55,7 +55,7 @@ export async function POST(request) {
     );
 
   } catch (error) {
-    console.error('❌ Erro no cadastro de usuário:', error);
+    console.error('Erro no cadastro de usuário:', error);
     return NextResponse.json(
       { message: 'Erro interno ao processar o cadastro.' }, 
       { status: 500 }
