@@ -3,24 +3,19 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { CircleX, Search, Trash2, Pencil, CircleCheck } from "lucide-react";
 import "./style.css";
-// Importando os novos componentes
 import ProductTableRow from "./pageComponents/ProductTableRow";
 import ProductFormModal from "./pageComponents/ProductFormModal";
 import ConfirmationModal from "./pageComponents/ConfirmationModal";
 import FilterAndStatsBar from "./pageComponents/FilterAndStatsBar";
 import { useBlobUrlCleanup } from './utils/useBlobUrlCleanup'; 
-import { formatarParaBRL, calcularValorComDesconto } from './utils/formatters'; // Assumindo que você separou as funções em formatters.js
-
-
+import { formatarParaBRL, calcularValorComDesconto } from './utils/formatters'; 
 export default function TelaEstoque() {
     const [popupAberto, setPopupAberto] = useState(false);
     const [nome, setNome] = useState("");
     const [categoria, setCategoria] = useState("");
     const [valor, setValor] = useState("");
     
-    // 'imagem' armazena o objeto File
     const [imagem, setImagem] = useState(null); 
-    // 'imagemPreview' armazena a Blob URL ou a URL da imagem existente
     const [imagemPreview, setImagemPreview] = useState(null); 
     
     const [searchTerm, setSearchTerm] = useState("");
@@ -36,7 +31,6 @@ export default function TelaEstoque() {
 
     const categoriasFiltro = ['Todos', 'Casa', 'Carros', 'Piscina', 'Perfumaria'];
 
-    // Gera opções de desconto
     const descontosOpcoes = useMemo(() => {
         const options = [];
         for (let i = 0; i <= 100; i += 5) {
@@ -45,18 +39,12 @@ export default function TelaEstoque() {
         return options;
     }, []);
 
-    // ----------------------------------------------------
     // LIMPEZA DE MEMÓRIA (BLOB URL)
-    // Revoga a Blob URL sempre que imagemPreview mudar.
     useBlobUrlCleanup(imagemPreview); 
-    // ----------------------------------------------------
     
-    // ----------------------------------------------------
-    // MANIPULADORES DE ESTADO E POPUP
-    // ----------------------------------------------------
-    
+  
+    //POPUP
     const fecharPopup = () => {
-        // Limpa a Blob URL manualmente antes de fechar o popup,
         // no caso de um novo arquivo ter sido selecionado e o usuário cancelar.
         if (imagemPreview && typeof imagemPreview === 'string' && imagemPreview.startsWith('blob:')) {
             URL.revokeObjectURL(imagemPreview);
@@ -75,7 +63,6 @@ export default function TelaEstoque() {
 
     const abrirPopupAdicionar = () => {
         setProdutoEditando(null); 
-        // Resetamos o estado para o formulário de adição
         setNome("");
         setCategoria("");
         setValor("");
@@ -93,9 +80,8 @@ export default function TelaEstoque() {
         setCategoria(produto.categoria);
         setValor(String(produto.valor).replace('.', ',')); 
         
-        // Se a imagem for uma URL de API (string), usamos ela, caso contrário, null (o usuário precisará enviar um novo File)
         setImagem(typeof produto.imagem === 'string' ? null : produto.imagem); 
-        setImagemPreview(produto.imagem); // Exibe a URL de imagem existente
+        setImagemPreview(produto.imagem); 
         
         const desc = produto.desconto || 0;
         setDesconto(desc);
@@ -107,12 +93,12 @@ export default function TelaEstoque() {
         const file = e.target.files[0];
 
         if (file) {
-            setImagem(file); // Armazena o objeto File original
+            setImagem(file); 
             
-            // Cria uma Blob URL para o preview (Mais eficiente que Base64)
+            //Blob URL para o preview 
             const fileURL = URL.createObjectURL(file);
             
-            // O cleanup do hook 'useBlobUrlCleanup' irá revogar a URL anterior
+            //Revogar a URL anterior
             setImagemPreview(fileURL); 
 
         } else {
@@ -120,19 +106,14 @@ export default function TelaEstoque() {
             setImagemPreview(null);
         }
     };
-    
-    // ----------------------------------------------------
-    // LÓGICA DE API
-    // ----------------------------------------------------
-
+  
     const handleSaveProduct = async () => {
-        // Verifica se há nome, categoria e valor
+        // Verificação
         if (!nome || !categoria || !valor) {
             alert("Preencha todos os campos.");
             return;
         }
 
-        // Se estiver adicionando, a imagem é obrigatória
         if (!produtoEditando && !imagem) {
             alert("Selecione uma imagem para o novo produto!");
             return;
@@ -143,7 +124,6 @@ export default function TelaEstoque() {
         const method = produtoEditando ? 'PUT' : 'POST';
         const url = produtoEditando ? `/api/produtos/${produtoEditando.id}` : '/api/produtos';
 
-        // Usando FormData para enviar dados e o objeto File
         const formData = new FormData();
         formData.append('nome', nome);
         formData.append('categoria', categoria);
@@ -151,8 +131,6 @@ export default function TelaEstoque() {
         formData.append('desconto', desconto);
         formData.append('emPromocao', emPromocao);
         
-        // Só adiciona a imagem se for um novo File.
-        // Se for uma string (URL de imagem existente), o backend deve saber como lidar.
         if (imagem instanceof File) {
             formData.append('imagem', imagem); 
         }
@@ -164,7 +142,6 @@ export default function TelaEstoque() {
         try {
             const res = await fetch(url, {
                 method: method,
-                // **IMPORTANTE:** Não defina o cabeçalho 'Content-Type' para FormData
                 body: formData, 
             });
 
