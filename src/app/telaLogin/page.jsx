@@ -1,127 +1,175 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-// 🟢 CORREÇÃO: Importar 'signIn' e 'useSession' de 'next-auth/react'
-import { signIn } from 'next-auth/react'; 
-import { Mail, Eye, EyeOff } from 'lucide-react';
-import "./style.css"; // Manter o caminho para o CSS
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { Mail, Eye, EyeOff } from "lucide-react";
+import ToastAlert from "./pageComponents/ToastAlert";
+import "./style.css";
 
 export default function PaginaLogin() {
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [showPassword, setShowPassword] = useState(false); 
-  const [isLoading, setIsLoading] = useState(false); // Adicionar estado de loading
-  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [toast, setToast] = useState(null);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setIsLoading(true);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/telaPrincipal";
 
-    try {
-        // 🟢 CORREÇÃO: Usar a função 'signIn' do NextAuth para credenciais
-        const resultado = await signIn('credentials', { 
-            // Os nomes dos campos devem ser os mesmos definidos no CredentialsProvider:
-            email,
-            senha,
-            // Desativar o redirecionamento automático para tratar a resposta manualmente:
-            redirect: false,
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const resultado = await signIn("credentials", {
+        email,
+        senha,
+        redirect: false,
+        callbackUrl,
+      });
+
+      if (resultado?.error) {
+        setToast({
+          type: "error",
+          message:
+            "Não foi possível realizar o login, pois o usuário não possui cadastro. Clique aqui para se cadastrar.",
         });
+      } else if (resultado?.ok) {
+        setToast({ type: "success", message: "Login realizado com sucesso!" });
+        setTimeout(() => router.push(callbackUrl), 1000); // aguarda 1s para mostrar toast
+      }
 
-        if (resultado.error) {
-            // Se houver erro (retorno null no authorize), o NextAuth define 'error'
-            console.error('Falha no login:', resultado.error);
-            alert('Falha no login: Credenciais inválidas. Tente novamente.');
-            
-        } else if (resultado.ok) {
-            // Login bem-sucedido
-            alert('Login realizado com sucesso! Redirecionando...');
-            // Redirecionar para a página principal ou home
-            router.push('/'); 
-        }
-      
-        setEmail('');
-        setSenha('');
-        
-    } catch (error) {
-        console.error('Erro na requisição:', error);
-        alert('Erro ao tentar fazer login. Verifique sua conexão.');
-    } finally {
-        setIsLoading(false);
+      setEmail("");
+      setSenha("");
+    } catch (error) {
+      setToast({
+        type: "error",
+        message: "Erro ao tentar fazer login. Tente novamente mais tarde.",
+      });
+    } finally {
+      setIsLoading(false);
     }
-  };
+  };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    try {
+      const result = await signIn("google", { redirect: false, callbackUrl });
 
-  return (
-    <>
-      <link href="https://fonts.googleapis.com/css2?family=Sansation:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+      if (result?.error === "usuario-nao-cadastrado") {
+        setToast({
+          type: "error",
+          message:
+            "Não foi possível realizar o login, pois o usuário não possui cadastro. Clique aqui para se cadastrar.",
+        });
+      } else if (result?.ok) {
+        setToast({ type: "success", message: "Login realizado com sucesso!" });
+        setTimeout(() => router.push(callbackUrl), 1000);
+      }
+    } catch (error) {
+      setToast({
+        type: "error",
+        message: "Erro ao tentar fazer login com Google.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      <div className="container">
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
-        <div className="logo-container">
-          {/* Logo */}
-        </div>
+  return (
+    <>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Sansation:wght@300;400;700&family=Urbanist:wght@100..900&display=swap"
+        rel="stylesheet"
+      />
 
-        <div className="card login-card">
-          <h2 className="titulo">Login</h2>
-          
-          <form onSubmit={handleSubmit} className="formulario">
-            {/* Campo Email */}
-            <div className="form-group">
-              <label htmlFor="email" className="label-com-asterisco">E-mail *</label>
-              <div className="input-icon-container">
-                <input
-                  type="email"
-                  id="email"
-                  className="input-field"
-                  placeholder="Insira seu e-mail"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <span className="input-icon"><Mail size={20} color="#000" /></span>
-              </div>
-            </div>
-            
-            {/* Campo Senha */}
-            <div className="form-group">
-              <label htmlFor="senha" className="label-com-asterisco">Senha*</label>
-              <div className="input-icon-container">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  id="senha"
-                  className="input-field"
-                  placeholder="Insira sua senha"
-                  value={senha}
-                  onChange={(e) => setSenha(e.target.value)}
-                  required
-                />
-                <span className="input-icon" onClick={togglePasswordVisibility}>
-                  {showPassword ? <EyeOff size={20} color="#000" /> : <Eye size={20} color="#000" />}
-                </span>
-              </div>
-            </div>
-            
-            <div className="button-group">
-              <button type="submit" className="button" disabled={isLoading}>
-                {isLoading ? 'Entrando...' : 'Entrar'}
+      {/* ALERT GLOBAL */}
+      {toast && (
+        <ToastAlert
+          type={toast.type}
+          message={toast.message}
+          duration={10000}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      <div className="container">
+        <div className="card login-card">
+          <h2 className="titulo">Login</h2>
+
+          {/* LOGIN GOOGLE */}
+          <button type="button" className="button google-btn" onClick={handleGoogleLogin}>
+            Continuar com Google
+          </button>
+
+          <div className="divisor">ou</div>
+
+          <form onSubmit={handleSubmit} className="formulario">
+            {/* EMAIL */}
+            <div className="form-group">
+              <label htmlFor="email" className="label-com-asterisco">
+                E-mail *
+              </label>
+              <div className="input-icon-container">
+                <input
+                  type="email"
+                  id="email"
+                  className="input-field"
+                  placeholder="Insira seu e-mail"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <span className="input-icon">
+                  <Mail size={20} color="#000" />
+                </span>
+              </div>
+            </div>
+
+            {/* SENHA */}
+            <div className="form-group">
+              <label htmlFor="senha" className="label-com-asterisco">
+                Senha *
+              </label>
+              <div className="input-icon-container">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="senha"
+                  className="input-field"
+                  placeholder="Insira sua senha"
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  required
+                />
+                <span className="input-icon" onClick={togglePasswordVisibility}>
+                  {showPassword ? <EyeOff size={20} color="#000" /> : <Eye size={20} color="#000" />}
+                </span>
+              </div>
+            </div>
+
+            {/* BOTÃO ENTRAR */}
+            <div className="button-group">
+              <button type="submit" className="button" disabled={isLoading}>
+                {isLoading ? "Entrando..." : "Entrar"}
               </button>
-            </div>
+            </div>
 
-            <div className="cadastro-link">
-                Não tem uma conta? <a href="/telaCadastro">Cadastre-se</a>
-            </div>
-            {/* Link para Esqueci a Senha */}
-            <div className="forgot-password-link">
-              <a href="/esqueci-senha">Esqueci minha senha</a>
-            </div>
+            <div className="cadastro-link">
+              Não tem uma conta? <a href="/telaCadastro">Cadastre-se</a>
+            </div>
 
-          </form>
-        </div>
-      </div>
-    </>
-  );
+            <div className="forgot-password-link">
+              <a href="/esqueci-senha">Esqueci minha senha</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </>
+  );
 }

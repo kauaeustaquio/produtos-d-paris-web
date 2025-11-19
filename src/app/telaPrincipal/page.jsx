@@ -35,11 +35,10 @@ async function getProdutos(buscaTermo = '') {
 
 // O Server Component que renderiza a página
 export default async function ProdutosdParis({ searchParams }) {
-    
-    const { busca: buscaParam = '' } = searchParams;
-    const busca = buscaParam;
 
-    let usuario = [];
+    const resolvedSearchParams = await searchParams;
+    const busca = resolvedSearchParams?.busca ?? '';
+
     try {
         usuario = await db.query("select * from usuario");
     } catch (e) {

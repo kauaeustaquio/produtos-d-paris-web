@@ -13,6 +13,7 @@ const createJestConfig = nextJest({
 
 /** @type {import('jest').Config} */
 const config = {
+  testEnvironment: "jest-fixed-jsdom",
   // All imported modules in your tests should be mocked automatically
   // automock: false,
 
