@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Mail, Eye, EyeOff } from "lucide-react";
-import ToastAlert from "./pageComponents/ToastAlert";
+import AlertMessage from "./pageComponents/AlertMessage";
 import "./style.css";
 
 export default function PaginaLogin() {
@@ -91,7 +91,7 @@ export default function PaginaLogin() {
 
       {/* ALERT GLOBAL */}
       {toast && (
-        <ToastAlert
+        <AlertMessage
           type={toast.type}
           message={toast.message}
           duration={10000}

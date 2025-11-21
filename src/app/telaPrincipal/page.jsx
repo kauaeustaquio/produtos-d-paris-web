@@ -1,5 +1,7 @@
 import db from "@/lib/db";
 import "./style.css";
+import EditButton from "@/components/EditButton";
+
 import {
     Pencil,
 } from "lucide-react";
@@ -151,9 +153,8 @@ export default async function ProdutosdParis({ searchParams }) {
                                                         </span>
                                                     </p>
                                                     
-                                                    <a href={`/editar-produto/${produto.id}`} className="edit-icon-link">
-                                                        <Pencil className="pencil-icon" />
-                                                    </a>
+                                                    <EditButton produto={produto} />
+
                                                 </div>
                                             </div>
                                         );
