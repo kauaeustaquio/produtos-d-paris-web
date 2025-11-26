@@ -2,36 +2,70 @@ import '@testing-library/jest-dom';
 import { render, screen, fireEvent } from '@testing-library/react';
 import EditButton from '/src/components/EditButton';
 
-const mockPush = jest.fn();
+jest.mock('/src/components/EditProductModal', () => ({
+  __esModule: true,
+  default: ({ onClose, onSave, product }) => (
+    <div data-testid="edit-modal">
+      <p>Modal aberto para ID {product.id}</p>
 
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: mockPush, 
-  }),
+      <button onClick={onClose} data-testid="close-btn">
+        Fechar
+      </button>
+
+      <button
+        onClick={() => onSave({ nome: "Produto Atualizado" })}
+        data-testid="save-btn"
+      >
+        Salvar
+      </button>
+    </div>
+  ),
 }));
 
 describe('EditButton', () => {
 
-  beforeEach(() => {
-    mockPush.mockClear();
+  const produtoFake = {
+    id: 123,
+    nome: "Produto Teste"
+  };
+
+  it('renderiza o botão', () => {
+    render(<EditButton produto={produtoFake} />);
+
+    const btn = screen.getByRole('button');
+    expect(btn).toBeInTheDocument();
   });
 
-  it('renderiza sem erros', () => {
-    render(<EditButton productId="123" />);
+  it('abre o modal ao clicar no botão', () => {
+    render(<EditButton produto={produtoFake} />);
 
-    //Faz uma busca de um elemento do tipo button (ele deve existir)
-    expect(screen.getByRole('button')).toBeInTheDocument();
+    const btn = screen.getByRole('button');
+    fireEvent.click(btn);
+
+    expect(screen.getByTestId('edit-modal')).toBeInTheDocument();
+    expect(screen.getByText('Modal aberto para ID 123')).toBeInTheDocument();
   });
 
-  it('chama router.push ao clicar', () => {
-    render(<EditButton productId="123" />);
+  it('fecha o modal ao clicar no botão Fechar', () => {
+    render(<EditButton produto={produtoFake} />);
 
-    const button = screen.getByRole('button');
-    
-    //Simula o clique no botão
-    fireEvent.click(button);
+    fireEvent.click(screen.getByRole('button'));
 
-    expect(mockPush).toHaveBeenCalledWith('/telaEstoque?editId=123');
+    const fecharBtn = screen.getByTestId('close-btn');
+    fireEvent.click(fecharBtn);
+
+    expect(screen.queryByTestId('edit-modal')).not.toBeInTheDocument();
+  });
+
+  it('executa onSave e fecha o modal', () => {
+    render(<EditButton produto={produtoFake} />);
+
+    fireEvent.click(screen.getByRole('button'));
+
+    const saveBtn = screen.getByTestId('save-btn');
+    fireEvent.click(saveBtn);
+
+    expect(screen.queryByTestId('edit-modal')).not.toBeInTheDocument();
   });
 
 });

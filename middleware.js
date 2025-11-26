@@ -1,48 +1,75 @@
+// middleware.js
+
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 export async function middleware(req) {
+    // 1. Obter o Token de Sessão
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     const { pathname } = req.nextUrl;
 
-    // Rotas que exigem estar logado
-    const precisaAuth =
-        pathname.startsWith("/perfil") ||
-        pathname.startsWith("/usuario") ||
-        pathname.startsWith("/historico") ||
-        pathname.startsWith("/clientes") ||
-        pathname.startsWith("/telaPrincipal") ||  
-        pathname.startsWith("/telaPedidos") ||     
-        pathname.startsWith("/telaEstoque") ||     
-        pathname.startsWith("/telaInfo");          
+    // --- Definição das Rotas ---
 
-    // Se precisa de login e não tem token → redireciona
+    // Rotas que não devem ser acessadas se o usuário estiver logado
+    const rotasPublicas = ["/", "/novoLogin", "/nao-autorizado"];
+    
+    // Rotas que exigem autenticação
+    const rotasProtegidas = [
+        "/perfil",
+        "/usuario",
+        "/historico",
+        "/clientes",
+        "/telaPrincipal",
+        "/telaPedidos",
+        "/telaEstoque",
+        "/telaInfo",
+    ];
+
+    const precisaAuth = rotasProtegidas.some(rota => pathname.startsWith(rota));
+    
+    // --- Lógica de Redirecionamento ---
+
+    // 2. Bloqueia Acesso à Raiz/Login se o Usuário Estiver Logado
+    // Se o usuário tem token e está tentando ir para a raiz ou tela de login, 
+    // force o redirecionamento para a tela principal para evitar loops.
+    if (token && (pathname === "/" || pathname.startsWith("/novoLogin"))) {
+        return NextResponse.redirect(new URL("/telaPrincipal", req.url));
+    }
+
+    // 3. Bloqueio de Acesso a Rotas Protegidas (Usuário Não Logado)
+    // Se a rota precisa de login E o usuário NÃO tem token, redireciona para o login.
     if (precisaAuth && !token) {
         const url = new URL("/novoLogin", req.url);
-        url.searchParams.set("callbackUrl", pathname);
+        // Salva a rota original para redirecionar após o login
+        url.searchParams.set("callbackUrl", pathname); 
         return NextResponse.redirect(url);
     }
 
-    // Controle de admin
+    // 4. Controle de Admin (Exemplo de Permissão)
     if (pathname.startsWith("/admin")) {
-        if (!token) return NextResponse.redirect(new URL("/novoLogin", req.url));
-        if (token.role !== "admin") {
+        // Se a rota é /admin e não tem token, a condição 3 já redirecionou.
+        
+        // Verifica a permissão de role
+        if (!token || token.role !== "admin") {
             return NextResponse.redirect(new URL("/nao-autorizado", req.url));
         }
     }
 
+    // 5. Permite o Acesso
     return NextResponse.next();
 }
 
-// ⛔ Aqui estava o erro: faltava colocar as rotas no matcher
+// Configuração: Define as rotas onde o middleware será executado
 export const config = {
     matcher: [
+        "/", // Inclui a rota raiz para a lógica de bloqueio de usuários logados
+        "/novoLogin", // Inclui para bloquear acesso de usuários logados
         "/perfil/:path*",
         "/usuario/:path*",
         "/historico/:path*",
         "/clientes/:path*",
-        "/telaPrincipal/:path*",   // AGORA FUNCIONA
-        "/telaPedidos/:path*",     
+        "/telaPrincipal/:path*",
+        "/telaPedidos/:path*",
         "/telaEstoque/:path*",
         "/telaInfo/:path*",
         "/admin/:path*",

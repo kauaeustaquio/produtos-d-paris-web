@@ -8,11 +8,14 @@ import ProductFormModal from "./pageComponents/ProductFormModal";
 import ConfirmationModal from "./pageComponents/ConfirmationModal";
 import FilterAndStatsBar from "./pageComponents/FilterAndStatsBar";
 import { useBlobUrlCleanup } from './utils/useBlobUrlCleanup'; 
+import CategoryFormModal from "./pageComponents/CategoryFormModal";
 import { formatarParaBRL, calcularValorComDesconto } from './utils/formatters'; 
+
 export default function TelaEstoque() {
     const [popupAberto, setPopupAberto] = useState(false);
     const [nome, setNome] = useState("");
-    const [categoria, setCategoria] = useState("");
+    // Se a categoria agora é um ID no DB, é melhor chamá-la de categoriaId e usar string para manter compatibilidade temporária:
+    const [categoria, setCategoria] = useState(""); 
     const [valor, setValor] = useState("");
     
     const [imagem, setImagem] = useState(null); 
@@ -29,7 +32,13 @@ export default function TelaEstoque() {
     const [desconto, setDesconto] = useState(0);
     const [emPromocao, setEmPromocao] = useState(false);
 
-    const categoriasFiltro = ['Todos', 'Casa', 'Carros', 'Piscina', 'Perfumaria'];
+    // ESTADOS PARA CATEGORIA (CORRIGIDO)
+    const [isCategoryPopupOpen, setIsCategoryPopupOpen] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState("");
+    const [categoriaObjetos, setCategoriaObjetos] = useState([]); 
+    const [categoriasFiltro, setCategoriasFiltro] = useState(['Todos']);
+    // REMOVIDO: A linha duplicada 'const categoriasFiltro = [...]'
+    // A lista de filtros agora será carregada via fetchCategorias
 
     const descontosOpcoes = useMemo(() => {
         const options = [];
@@ -42,10 +51,67 @@ export default function TelaEstoque() {
     // LIMPEZA DE MEMÓRIA (BLOB URL)
     useBlobUrlCleanup(imagemPreview); 
     
-  
-    //POPUP
+    // --- FUNÇÕES DE CATEGORIA ---
+
+    const fetchCategorias = async () => {
+        try {
+            // OBS: Assume que '/api/categorias' retorna uma lista de objetos: [{ id: 1, nome: 'Casa' }, ...]
+            const res = await fetch('/api/categorias');
+            if (!res.ok) {
+                throw new Error('Erro ao buscar categorias');
+            }
+            const data = await res.json();
+            
+            setCategoriaObjetos(data); 
+            setCategoriasFiltro(['Todos', ...data.map(c => c.nome)]); 
+
+        } catch (error) {
+            console.error("Falha ao buscar categorias:", error);
+        }
+    };
+
+    const openCategoryPopup = () => {
+        setNewCategoryName("");
+        setIsCategoryPopupOpen(true);
+    };
+
+    const closeCategoryPopup = () => {
+        setNewCategoryName("");
+        setIsCategoryPopupOpen(false);
+    };
+
+    const handleSaveCategory = async () => {
+        if (!newCategoryName.trim()) {
+            alert("Preencha o nome da categoria.");
+            return;
+        }
+
+        try {
+            // OBS: Endpoint da API para salvar a nova categoria no DB
+            const res = await fetch('/api/categorias', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome: newCategoryName.trim() }), 
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ message: 'Erro desconhecido.' }));
+                throw new Error(`Erro ao adicionar categoria: ${errorData.message || res.statusText}`);
+            }
+
+            console.log("Categoria adicionada com sucesso!");
+            closeCategoryPopup();
+            await fetchCategorias(); // Recarrega a lista de categorias e filtros
+            
+        } catch (error) {
+            console.error("Falha ao adicionar categoria:", error);
+            alert(`Não foi possível adicionar a categoria. Detalhe: ${error.message}`);
+        }
+    };
+
+    // --- POPUP DE PRODUTO ---
+
     const fecharPopup = () => {
-        // no caso de um novo arquivo ter sido selecionado e o usuário cancelar.
         if (imagemPreview && typeof imagemPreview === 'string' && imagemPreview.startsWith('blob:')) {
             URL.revokeObjectURL(imagemPreview);
         }
@@ -53,7 +119,7 @@ export default function TelaEstoque() {
         setPopupAberto(false);
         setProdutoEditando(null); 
         setNome("");
-        setCategoria("");
+        setCategoria(""); // Categoria é redefinida
         setValor("");
         setImagem(null);
         setImagemPreview(null);
@@ -64,7 +130,7 @@ export default function TelaEstoque() {
     const abrirPopupAdicionar = () => {
         setProdutoEditando(null); 
         setNome("");
-        setCategoria("");
+        setCategoria(""); // Categoria é redefinida
         setValor("");
         setImagem(null);
         setImagemPreview(null);
@@ -77,7 +143,8 @@ export default function TelaEstoque() {
         setProdutoEditando(produto); 
 
         setNome(produto.nome);
-        setCategoria(produto.categoria);
+        // Assumindo que produto.categoria agora é o ID da categoria
+        setCategoria(produto.categoria); 
         setValor(String(produto.valor).replace('.', ',')); 
         
         setImagem(typeof produto.imagem === 'string' ? null : produto.imagem); 
@@ -94,11 +161,7 @@ export default function TelaEstoque() {
 
         if (file) {
             setImagem(file); 
-            
-            //Blob URL para o preview 
             const fileURL = URL.createObjectURL(file);
-            
-            //Revogar a URL anterior
             setImagemPreview(fileURL); 
 
         } else {
@@ -106,10 +169,10 @@ export default function TelaEstoque() {
             setImagemPreview(null);
         }
     };
-  
+ 
     const handleSaveProduct = async () => {
-        // Verificação
-        if (!nome || !categoria || !valor) {
+        // Verificação: 'categoria' agora deve ser o ID ou nome da categoria selecionada
+        if (!nome || !categoria || !valor) { 
             alert("Preencha todos os campos.");
             return;
         }
@@ -126,7 +189,8 @@ export default function TelaEstoque() {
 
         const formData = new FormData();
         formData.append('nome', nome);
-        formData.append('categoria', categoria);
+        // Envia o ID ou Nome da categoria, dependendo de como você refatorou o DB/API
+        formData.append('categoria', categoria); 
         formData.append('valor', valorNumerico);
         formData.append('desconto', desconto);
         formData.append('emPromocao', emPromocao);
@@ -210,14 +274,21 @@ export default function TelaEstoque() {
         setProductToDelete(null);
     };
 
+    // --- USE EFFECT ---
+    useEffect(() => {
+        fetchCategorias(); // Buscar categorias na montagem
+    }, []);
+
     useEffect(() => {
         fetchProdutos();
-    }, [searchTerm, activeFilter]);
+    }, [searchTerm, activeFilter, categoriaObjetos]); // Adicionado categoriaObjetos como dependência para recarregar produtos se categorias mudarem
 
     const handleFilterClick = (category) => {
         setActiveFilter(category);
         setIsFilterPopupOpen(false);
     };
+
+    // --- JSX (RENDERIZAÇÃO) ---
 
     return (
         <>
@@ -238,8 +309,8 @@ export default function TelaEstoque() {
             </div>
             
             <div className="main-content">
-                <div className="stock-container"> {/* <-- CORRIGIDO AQUI */}
-                    <header className="stock-header"> {/* <-- CORRIGIDO AQUI */}
+                <div className="stock-container"> 
+                    <header className="stock-header"> 
                         <img src="/img/estoque-icone.png" alt="Ícone de Estoque" />
                         <h1>Gerenciar estoque</h1>
                     </header>
@@ -253,8 +324,9 @@ export default function TelaEstoque() {
                         setIsFilterPopupOpen={setIsFilterPopupOpen}
                         activeFilter={activeFilter}
                         handleFilterClick={handleFilterClick}
-                        categoriasFiltro={categoriasFiltro}
+                        categoriasFiltro={categoriasFiltro} // USANDO O ESTADO DINÂMICO
                         onAddProduct={abrirPopupAdicionar}
+                        onAddCategory={openCategoryPopup} // NOVO PROP PARA O POPUP DE CATEGORIA
                     />
 
                     <div className="product-table-container">
@@ -299,6 +371,7 @@ export default function TelaEstoque() {
                             desconto={desconto} setDesconto={setDesconto}
                             emPromocao={emPromocao} setEmPromocao={setEmPromocao}
                             descontosOpcoes={descontosOpcoes}
+                            categoriaObjetos={categoriaObjetos} // PASSANDO OS OBJETOS DE CATEGORIA
                         />
                     )}
 
@@ -309,6 +382,16 @@ export default function TelaEstoque() {
                             message="Essa ação não pode ser desfeita."
                             onCancel={handleDeleteCancel}
                             onConfirm={handleDeleteConfirm}
+                        />
+                    )}
+
+                    {/* Componente: CategoryFormModal */}
+                    {isCategoryPopupOpen && (
+                        <CategoryFormModal
+                            onClose={closeCategoryPopup}
+                            onSave={handleSaveCategory}
+                            newCategoryName={newCategoryName}
+                            setNewCategoryName={setNewCategoryName}
                         />
                     )}
                 </div>

@@ -36,16 +36,22 @@ async function getProdutos(buscaTermo = '') {
 }
 
 // O Server Component que renderiza a página
+// O Server Component que renderiza a página
 export default async function ProdutosdParis({ searchParams }) {
 
     const resolvedSearchParams = await searchParams;
     const busca = resolvedSearchParams?.busca ?? '';
+
+    // CORREÇÃO APLICADA AQUI: Adicionado 'const' para declarar a variável 'usuario'.
+    let usuario = null; // Inicialize a variável antes do bloco try/catch
 
     try {
         usuario = await db.query("select * from usuario");
     } catch (e) {
         console.error("Erro ao buscar usuário (ignorado para carregar produtos):", e);
     }
+    
+    // ... o restante do seu código
 
     const produtosFiltrados = await getProdutos(busca);
 
