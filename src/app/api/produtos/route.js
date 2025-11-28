@@ -1,47 +1,57 @@
+// app/api/produtos/route.js
+
 import db from "@/lib/db"; 
 import { put } from "@vercel/blob";
 import { NextResponse } from 'next/server';
 
+// =======================================================
+// Rota GET: Busca Produtos (com JOIN na tabela Categorias)
+// =======================================================
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
         const searchTerm = searchParams.get('search') || '';
-        const category = searchParams.get('category') || '';
+        // O parâmetro 'category' agora deve receber o NOME ou ID da categoria. 
+        // Vamos usá-lo para filtrar pelo NOME da categoria na tabela 'categorias'.
+        const categoryFilter = searchParams.get('category') || '';
 
+        // 1. Query com JOIN para obter nome e ID da categoria
         let query = `
             SELECT 
-                *, 
-                COALESCE(desconto, 0) as desconto, 
-                COALESCE(em_promocao, false) as "emPromocao" 
-            FROM produtos 
+                p.*, 
+                c.nome AS nome_categoria,           -- Nome da categoria
+                c.id AS categoria_id,               -- ID da categoria
+                c.imagem_url AS imagem_categoria,   -- Imagem da categoria (opcional)
+                COALESCE(p.desconto, 0) as desconto, 
+                COALESCE(p.em_promocao, false) as "emPromocao" 
+            FROM produtos p
+            JOIN categorias c ON p.categoria_id = c.id   -- <--- NOVO JOIN
             WHERE 1=1
         `;
         const values = [];
         let paramIndex = 1;
 
         if (searchTerm) {
-            // Se searchTerm é usado duas vezes na query, ele precisa ser passado 
-            // no array de valores apenas UMA vez, mas o placeholder $n deve ser o mesmo.
-            // Ex: ... (nome ILIKE $1 OR categoria ILIKE $1)
-            query += ` AND (nome ILIKE $${paramIndex} OR categoria ILIKE $${paramIndex})`;
+            // 2. Busca agora em 'p.nome' ou 'c.nome'
+            query += ` AND (p.nome ILIKE $${paramIndex} OR c.nome ILIKE $${paramIndex})`;
             values.push(`%${searchTerm}%`);
             paramIndex++;
         }
 
-        if (category) {
-            query += ` AND categoria = $${paramIndex}`;
-            values.push(category);
+        if (categoryFilter) {
+            // 3. Filtra pelo nome da categoria (ou você pode mudar para filtrar por c.id se o frontend enviar o ID)
+            query += ` AND c.nome = $${paramIndex}`;
+            values.push(categoryFilter);
             paramIndex++;
         }
 
-        query += " ORDER BY id DESC"; 
+        query += " ORDER BY p.id DESC"; // Ordena pelo ID do produto (p.id)
 
         const result = await db.query(query, values);
 
         return NextResponse.json(result.rows);
     } catch (error) {
         console.error("Erro na busca de produtos (GET):", error);
-        // Retorna o erro detalhado para ajudar no debug do frontend
         return NextResponse.json({ 
             message: 'Falha ao buscar produtos', 
             detail: error.message || 'Erro de servidor' 
@@ -49,43 +59,56 @@ export async function GET(request) {
     }
 }
 
+// =======================================================
+// Rota POST: Criar Produto (usando categoria_id e Blob Token específico)
+// =======================================================
 export async function POST(req) {
-    let imageUrl = null; // Variável para armazenar a URL do Blob
+    let imageUrl = null; 
     
     try {
-        // 1. ✅ CORREÇÃO: Lê os dados como FormData (Obrigatório para upload de arquivo)
         const formData = await req.formData();
 
-        // 2. Extrai e converte os campos
+        // 1. Extrai e converte os campos
         const nome = formData.get('nome');
-        const categoria = formData.get('categoria');
+        // Espera-se o ID da categoria, não o nome. Converte para inteiro.
+        const categoriaId = parseInt(formData.get('categoriaId')); // <--- MUDANÇA
         const valor = parseFloat(formData.get('valor'));
-        const imagemFile = formData.get('imagem'); // Objeto File / Blob
+        const imagemFile = formData.get('imagem'); 
         
         const quantidade = parseInt(formData.get('quantidade')) || 0; 
         const desconto = parseInt(formData.get('desconto')) || 0; 
-        const emPromocao = formData.get('emPromocao') === 'true'; // Conversão de string para booleano
+        const emPromocao = formData.get('emPromocao') === 'true'; 
 
-        // 3. Validação essencial
-        if (!nome || !categoria || isNaN(valor) || !imagemFile) {
+        // 2. Validação essencial (checa se o ID é um número)
+        if (!nome || isNaN(categoriaId) || isNaN(valor) || !imagemFile) {
             return NextResponse.json({ 
                 error: "Campos obrigatórios faltando ou em formato inválido.",
-                detail: `Nome: ${nome}, Categoria: ${categoria}, Valor: ${valor}, Imagem: ${!!imagemFile}` 
+                detail: `Nome: ${nome}, Categoria ID: ${categoriaId}, Valor: ${valor}, Imagem: ${!!imagemFile}` 
             }, { status: 400 });
         }
         
-        // 4. ✅ UPLOAD PARA VERCEL BLOB (DEVE VIR ANTES DO INSERT NO DB)
-        // O put() precisa ser chamado com o objeto File, e o resultado é a URL que o DB precisa.
+        // 3. Obtém o Token de Acesso ESPECÍFICO para Produtos
+        const productsToken = process.env.BLOB_PRODUCTS_READ_WRITE_TOKEN;
+        
+        if (!productsToken) {
+             return NextResponse.json({ 
+                error: "BLOB_PRODUCTS_READ_WRITE_TOKEN não está definido no ambiente." 
+            }, { status: 500 });
+        }
+        
+        // 4. UPLOAD PARA VERCEL BLOB (STORE DE PRODUTOS)
         if (imagemFile && imagemFile.size > 0) {
-            // put(filename, blob, options)
-            const blob = await put(nome, imagemFile, { access: 'public' });
+            const blob = await put(nome, imagemFile, { 
+                access: 'public',
+                token: productsToken // <--- CHAVE ESPECÍFICA INSERIDA AQUI
+            });
             imageUrl = blob.url; // Armazena a URL pública
         }
         
-        // 5. INSERÇÃO NO BANCO DE DADOS
+        // 5. INSERÇÃO NO BANCO DE DADOS (usando categoria_id)
         const result = await db.query(
-            "INSERT INTO produtos (nome, categoria, valor, imagem, quantidade, desconto, em_promocao) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
-            [nome, categoria, valor, imageUrl, quantidade, desconto, emPromocao] // Passa a imageUrl aqui
+            "INSERT INTO produtos (nome, categoria_id, valor, imagem, quantidade, desconto, em_promocao) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+            [nome, categoriaId, valor, imageUrl, quantidade, desconto, emPromocao] // <--- Passa categoriaId
         );
 
         return NextResponse.json(result.rows[0], { status: 201 });

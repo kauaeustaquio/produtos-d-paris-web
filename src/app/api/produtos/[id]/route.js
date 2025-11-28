@@ -1,11 +1,9 @@
-// Arquivo: src/app/api/produtos/[id]/route.js
-
 import { NextResponse } from 'next/server';
 import db from "@/lib/db";
 import { put } from "@vercel/blob"; 
 
 // ==========================================================
-// FUNÇÃO PUT (Atualiza o produto, a que você forneceu)
+// FUNÇÃO PUT (Atualiza o produto, usando categoria_id)
 // ==========================================================
 export async function PUT(req, { params }) {
     let imageUrl = null;
@@ -14,37 +12,56 @@ export async function PUT(req, { params }) {
         const id = params.id; 
         const formData = await req.formData();
         
+        // Campos atualizados: Agora esperamos 'categoriaId'
         const nome = formData.get('nome');
-        const categoria = formData.get('categoria');
+        const categoriaId = parseInt(formData.get('categoriaId')); // <--- MUDANÇA: Recebe o ID
         const valor = parseFloat(formData.get('valor'));
         const imagemFile = formData.get('imagem');
         const desconto = parseInt(formData.get('desconto')) || 0; 
         const emPromocao = formData.get('emPromocao') === 'true'; 
 
-        if (!id || !nome || !categoria || isNaN(valor)) {
-            return NextResponse.json({ error: "ID ou campos obrigatórios faltando ou em formato inválido." }, { status: 400 });
+        // Validação: Checa o ID do produto e a categoriaId
+        if (!id || !nome || isNaN(categoriaId) || isNaN(valor)) {
+            return NextResponse.json({ 
+                error: "ID do produto, Categoria ID ou campos obrigatórios faltando ou em formato inválido." 
+            }, { status: 400 });
         }
 
-        // Lógica de Imagem
+        // Obtém o Token de Acesso ESPECÍFICO para Produtos
+        const productsToken = process.env.BLOB_PRODUCTS_READ_WRITE_TOKEN;
+        
+        if (!productsToken) {
+             return NextResponse.json({ 
+                error: "BLOB_PRODUCTS_READ_WRITE_TOKEN não está definido no ambiente." 
+            }, { status: 500 });
+        }
+
+        // Lógica de Imagem: Verifica se é um novo arquivo ou uma URL string existente
         if (imagemFile && typeof imagemFile !== 'string') {
             if (imagemFile.size > 0) {
-                 const blob = await put(nome, imagemFile, { access: 'public' });
+                 // Upload para o Blob Store de Produtos
+                 const blob = await put(nome, imagemFile, { 
+                     access: 'public',
+                     token: productsToken // <--- CHAVE ESPECÍFICA
+                 });
                  imageUrl = blob.url;
             }
         } else if (typeof imagemFile === 'string') {
+            // Se for uma string, é a URL existente que queremos manter
             imageUrl = imagemFile;
         }
 
+        // Caso a imagem tenha sido limpa, garante que a URL seja nula se não for fornecida
         if (imageUrl === null) {
             imageUrl = formData.get('imagem') || null; 
         }
 
-        // Execução da Query UPDATE
+        // Execução da Query UPDATE (Atualizada para usar categoria_id)
         const result = await db.query(
             `UPDATE produtos 
-             SET nome = $1, categoria = $2, valor = $3, imagem = $4, desconto = $5, em_promocao = $6
+             SET nome = $1, categoria_id = $2, valor = $3, imagem = $4, desconto = $5, em_promocao = $6
              WHERE id = $7 RETURNING *`, 
-            [nome, categoria, valor, imageUrl, desconto, emPromocao, id] 
+            [nome, categoriaId, valor, imageUrl, desconto, emPromocao, id] // <--- Passa categoriaId
         );
 
         if (result.rowCount === 0) {
@@ -64,7 +81,7 @@ export async function PUT(req, { params }) {
 
 
 // ==========================================================
-// FUNÇÃO DELETE (Obrigatória para resolver o erro 405)
+// FUNÇÃO DELETE (Não precisa de alterações)
 // ==========================================================
 export async function DELETE(request, { params }) {
     try {
@@ -93,5 +110,5 @@ export async function DELETE(request, { params }) {
     }
 }
 
-// Opcional: Adicione a função GET para buscar um único produto
+// Opcional: Adicione a função GET para buscar um único produto se necessário
 // export async function GET(request, { params }) { /* ... */ }

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { CircleX, Upload } from 'lucide-react';
 import './CategoryFormModal.css'; 
 
@@ -9,14 +9,37 @@ export default function CategoryFormModal({
     setNewCategoryName, 
 }) {
     const fileInputRef = useRef(null);
+    const [selectedImage, setSelectedImage] = useState(null);
 
     const handleNameChange = (e) => {
         setNewCategoryName(e.target.value);
     };
 
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedImage(file);
+        }
+    };
+
     const handleConfirm = (e) => {
         e.preventDefault();
-        onSave(); // Chama a função handleSaveCategory
+
+        if (!newCategoryName.trim()) {
+            alert("Nome da categoria é obrigatório.");
+            return;
+        }
+
+        if (!selectedImage) {
+            alert("Selecione uma imagem.");
+            return;
+        }
+
+        // envia nome + imagem para o pai
+        onSave({
+            nome: newCategoryName,
+            imagem: selectedImage
+        });
     };
 
     return (
@@ -33,7 +56,7 @@ export default function CategoryFormModal({
                     <input
                         type="file"
                         ref={fileInputRef}
-                        // Lógica de imagem removida, mas o input fica para o visual
+                        onChange={handleImageChange}
                         style={{ display: 'none' }}
                         accept="image/*"
                     />
@@ -41,10 +64,11 @@ export default function CategoryFormModal({
                     <div className="image-upload-area" onClick={() => fileInputRef.current.click()}>
                         <div className="upload-placeholder">
                             <Upload size={48} />
-                            <p className="upload-text">Selecione a imagem somente para adição</p>
+                            <p className="upload-text">
+                                {selectedImage ? selectedImage.name : "Selecione a imagem"}
+                            </p>
                         </div>
                     </div>
-                    
 
                     <label htmlFor="categoryName" className="label-category">Nome da categoria:</label>
                     <input

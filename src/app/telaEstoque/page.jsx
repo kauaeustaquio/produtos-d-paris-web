@@ -3,399 +3,430 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { CircleX, Search, Trash2, Pencil, CircleCheck } from "lucide-react";
 import "./style.css";
+
 import ProductTableRow from "./pageComponents/ProductTableRow";
 import ProductFormModal from "./pageComponents/ProductFormModal";
 import ConfirmationModal from "./pageComponents/ConfirmationModal";
 import FilterAndStatsBar from "./pageComponents/FilterAndStatsBar";
-import { useBlobUrlCleanup } from './utils/useBlobUrlCleanup'; 
 import CategoryFormModal from "./pageComponents/CategoryFormModal";
-import { formatarParaBRL, calcularValorComDesconto } from './utils/formatters'; 
+import { useBlobUrlCleanup } from "./utils/useBlobUrlCleanup";
+import { formatarParaBRL, calcularValorComDesconto } from "./utils/formatters";
 
 export default function TelaEstoque() {
-    const [popupAberto, setPopupAberto] = useState(false);
-    const [nome, setNome] = useState("");
-    // Se a categoria agora é um ID no DB, é melhor chamá-la de categoriaId e usar string para manter compatibilidade temporária:
-    const [categoria, setCategoria] = useState(""); 
-    const [valor, setValor] = useState("");
-    
-    const [imagem, setImagem] = useState(null); 
-    const [imagemPreview, setImagemPreview] = useState(null); 
-    
-    const [searchTerm, setSearchTerm] = useState("");
-    const [produtos, setProdutos] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
-    const [activeFilter, setActiveFilter] = useState('Todos');
-    const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
-    const [productToDelete, setProductToDelete] = useState(null);
-    const [produtoEditando, setProdutoEditando] = useState(null); 
-    const [desconto, setDesconto] = useState(0);
-    const [emPromocao, setEmPromocao] = useState(false);
+  const [popupAberto, setPopupAberto] = useState(false);
+  const [nome, setNome] = useState("");
+  // Mantemos como string no input, mas convertimos antes de enviar
+  const [selectedCategoriaId, setSelectedCategoriaId] = useState("");
+  const [valor, setValor] = useState("");
 
-    // ESTADOS PARA CATEGORIA (CORRIGIDO)
-    const [isCategoryPopupOpen, setIsCategoryPopupOpen] = useState(false);
-    const [newCategoryName, setNewCategoryName] = useState("");
-    const [categoriaObjetos, setCategoriaObjetos] = useState([]); 
-    const [categoriasFiltro, setCategoriasFiltro] = useState(['Todos']);
-    // REMOVIDO: A linha duplicada 'const categoriasFiltro = [...]'
-    // A lista de filtros agora será carregada via fetchCategorias
+  const [imagem, setImagem] = useState(null); // File
+  const [imagemPreview, setImagemPreview] = useState(null); // URL (blob ou servidor)
 
-    const descontosOpcoes = useMemo(() => {
-        const options = [];
-        for (let i = 0; i <= 100; i += 5) {
-            options.push(i);
-        }
-        return options;
-    }, []);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [produtos, setProdutos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("Todos");
+  const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
+  const [produtoEditando, setProdutoEditando] = useState(null);
+  const [desconto, setDesconto] = useState(0);
+  const [emPromocao, setEmPromocao] = useState(false);
 
-    // LIMPEZA DE MEMÓRIA (BLOB URL)
-    useBlobUrlCleanup(imagemPreview); 
-    
-    // --- FUNÇÕES DE CATEGORIA ---
+  // Categoria
+  const [isCategoryPopupOpen, setIsCategoryPopupOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryImage, setNewCategoryImage] = useState(null);
+  const [newCategoryImagePreview, setNewCategoryImagePreview] = useState(null);
 
-    const fetchCategorias = async () => {
-        try {
-            // OBS: Assume que '/api/categorias' retorna uma lista de objetos: [{ id: 1, nome: 'Casa' }, ...]
-            const res = await fetch('/api/categorias');
-            if (!res.ok) {
-                throw new Error('Erro ao buscar categorias');
-            }
-            const data = await res.json();
-            
-            setCategoriaObjetos(data); 
-            setCategoriasFiltro(['Todos', ...data.map(c => c.nome)]); 
+  const [categoriaObjetos, setCategoriaObjetos] = useState([]);
+  const [categoriasFiltro, setCategoriasFiltro] = useState(["Todos"]);
 
-        } catch (error) {
-            console.error("Falha ao buscar categorias:", error);
-        }
-    };
+  const descontosOpcoes = useMemo(() => {
+    const options = [];
+    for (let i = 0; i <= 100; i += 5) options.push(i);
+    return options;
+  }, []);
 
-    const openCategoryPopup = () => {
-        setNewCategoryName("");
-        setIsCategoryPopupOpen(true);
-    };
+  // Limpeza de blob URLs geradas por este componente
+  useBlobUrlCleanup(imagemPreview);
+  useBlobUrlCleanup(newCategoryImagePreview);
 
-    const closeCategoryPopup = () => {
-        setNewCategoryName("");
-        setIsCategoryPopupOpen(false);
-    };
+  // --- CATEGORIAS ---
+  const fetchCategorias = async () => {
+    try {
+      const res = await fetch("/api/categorias");
+      if (!res.ok) throw new Error("Erro ao buscar categorias");
+      const data = await res.json();
+      // Espera-se array de objetos { id, nome, imagem_url }
+      setCategoriaObjetos(data || []);
+      setCategoriasFiltro(["Todos", ...(data || []).map((c) => c.nome)]);
+    } catch (error) {
+      console.error("Falha ao buscar categorias:", error);
+      setCategoriaObjetos([]);
+      setCategoriasFiltro(["Todos"]);
+    }
+  };
 
-    const handleSaveCategory = async () => {
-        if (!newCategoryName.trim()) {
-            alert("Preencha o nome da categoria.");
-            return;
-        }
+  const openCategoryPopup = () => {
+    setNewCategoryName("");
+    setNewCategoryImage(null);
+    if (newCategoryImagePreview && typeof newCategoryImagePreview === "string" && newCategoryImagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(newCategoryImagePreview);
+    }
+    setNewCategoryImagePreview(null);
+    setIsCategoryPopupOpen(true);
+  };
 
-        try {
-            // OBS: Endpoint da API para salvar a nova categoria no DB
-            const res = await fetch('/api/categorias', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nome: newCategoryName.trim() }), 
-            });
+  const closeCategoryPopup = () => {
+    setNewCategoryName("");
+    setNewCategoryImage(null);
+    if (newCategoryImagePreview && typeof newCategoryImagePreview === "string" && newCategoryImagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(newCategoryImagePreview);
+    }
+    setNewCategoryImagePreview(null);
+    setIsCategoryPopupOpen(false);
+  };
 
-            if (!res.ok) {
-                const errorData = await res.json().catch(() => ({ message: 'Erro desconhecido.' }));
-                throw new Error(`Erro ao adicionar categoria: ${errorData.message || res.statusText}`);
-            }
+  const handleCategoryFileChange = (e) => {
+    const file = e?.target?.files?.[0] || null;
+    if (file) {
+      setNewCategoryImage(file);
+      const fileURL = URL.createObjectURL(file);
+      setNewCategoryImagePreview(fileURL);
+    } else {
+      if (newCategoryImagePreview && typeof newCategoryImagePreview === "string" && newCategoryImagePreview.startsWith("blob:")) {
+        URL.revokeObjectURL(newCategoryImagePreview);
+      }
+      setNewCategoryImage(null);
+      setNewCategoryImagePreview(null);
+    }
+  };
 
-            console.log("Categoria adicionada com sucesso!");
-            closeCategoryPopup();
-            await fetchCategorias(); // Recarrega a lista de categorias e filtros
-            
-        } catch (error) {
-            console.error("Falha ao adicionar categoria:", error);
-            alert(`Não foi possível adicionar a categoria. Detalhe: ${error.message}`);
-        }
-    };
+  const handleSaveCategory = async () => {
+    if (!newCategoryName.trim() || !newCategoryImage) {
+      alert("Preencha o nome e selecione uma imagem para a categoria.");
+      return;
+    }
 
-    // --- POPUP DE PRODUTO ---
+    const formData = new FormData();
+    formData.append("nome", newCategoryName.trim());
+    formData.append("imagem", newCategoryImage);
 
-    const fecharPopup = () => {
-        if (imagemPreview && typeof imagemPreview === 'string' && imagemPreview.startsWith('blob:')) {
-            URL.revokeObjectURL(imagemPreview);
-        }
+    try {
+      const res = await fetch("/api/categorias", {
+        method: "POST",
+        body: formData,
+      });
 
-        setPopupAberto(false);
-        setProdutoEditando(null); 
-        setNome("");
-        setCategoria(""); // Categoria é redefinida
-        setValor("");
-        setImagem(null);
-        setImagemPreview(null);
-        setDesconto(0); 
-        setEmPromocao(false);
-    };
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ message: "Erro desconhecido." }));
+        throw new Error(errorData.detail || errorData.message || res.statusText);
+      }
 
-    const abrirPopupAdicionar = () => {
-        setProdutoEditando(null); 
-        setNome("");
-        setCategoria(""); // Categoria é redefinida
-        setValor("");
-        setImagem(null);
-        setImagemPreview(null);
-        setDesconto(0);
-        setEmPromocao(false);
-        setPopupAberto(true);
-    };
-    
-    const abrirPopupEdicao = (produto) => {
-        setProdutoEditando(produto); 
+      closeCategoryPopup();
+      await fetchCategorias();
+    } catch (error) {
+      console.error("Falha ao adicionar categoria:", error);
+      alert(`Não foi possível adicionar a categoria. Detalhe: ${error.message}`);
+    }
+  };
 
-        setNome(produto.nome);
-        // Assumindo que produto.categoria agora é o ID da categoria
-        setCategoria(produto.categoria); 
-        setValor(String(produto.valor).replace('.', ',')); 
-        
-        setImagem(typeof produto.imagem === 'string' ? null : produto.imagem); 
-        setImagemPreview(produto.imagem); 
-        
-        const desc = produto.desconto || 0;
-        setDesconto(desc);
-        setEmPromocao(desc > 0); 
-        setPopupAberto(true);
-    };
+  // --- PRODUTOS ---
+  const fecharPopup = () => {
+    // revogar somente se for blob URL
+    if (imagemPreview && typeof imagemPreview === "string" && imagemPreview.startsWith("blob:")) {
+      try {
+        URL.revokeObjectURL(imagemPreview);
+      } catch (e) {
+        // noop
+      }
+    }
 
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
+    setPopupAberto(false);
+    setProdutoEditando(null);
+    setNome("");
+    setSelectedCategoriaId("");
+    setValor("");
+    setImagem(null);
+    setImagemPreview(null);
+    setDesconto(0);
+    setEmPromocao(false);
+  };
 
-        if (file) {
-            setImagem(file); 
-            const fileURL = URL.createObjectURL(file);
-            setImagemPreview(fileURL); 
+  const abrirPopupAdicionar = () => {
+    setProdutoEditando(null);
+    setNome("");
+    setSelectedCategoriaId("");
+    setValor("");
+    setImagem(null);
+    setImagemPreview(null);
+    setDesconto(0);
+    setEmPromocao(false);
+    setPopupAberto(true);
+  };
 
-        } else {
-            setImagem(null);
-            setImagemPreview(null);
-        }
-    };
- 
-    const handleSaveProduct = async () => {
-        // Verificação: 'categoria' agora deve ser o ID ou nome da categoria selecionada
-        if (!nome || !categoria || !valor) { 
-            alert("Preencha todos os campos.");
-            return;
-        }
+  const abrirPopupEdicao = (produto) => {
+    setProdutoEditando(produto);
 
-        if (!produtoEditando && !imagem) {
-            alert("Selecione uma imagem para o novo produto!");
-            return;
-        }
-        
-        const valorNumerico = parseFloat(String(valor).replace(',', '.'));
+    setNome(produto?.nome || "");
+    setSelectedCategoriaId(produto?.categoria_id != null ? String(produto.categoria_id) : "");
+    setValor(produto?.valor != null ? String(produto.valor).replace('.', ',') : "");
 
-        const method = produtoEditando ? 'PUT' : 'POST';
-        const url = produtoEditando ? `/api/produtos/${produtoEditando.id}` : '/api/produtos';
+    setImagem(null);
+    // produto.imagem pode ser URL absoluta (servidor) ou blob url. Protegemos contra undefined
+    if (produto?.imagem) setImagemPreview(produto.imagem);
+    else setImagemPreview(null);
 
-        const formData = new FormData();
-        formData.append('nome', nome);
-        // Envia o ID ou Nome da categoria, dependendo de como você refatorou o DB/API
-        formData.append('categoria', categoria); 
-        formData.append('valor', valorNumerico);
-        formData.append('desconto', desconto);
-        formData.append('emPromocao', emPromocao);
-        
-        if (imagem instanceof File) {
-            formData.append('imagem', imagem); 
-        }
+    const desc = produto?.desconto || 0;
+    setDesconto(desc);
+    setEmPromocao(Boolean(desc > 0));
+    setPopupAberto(true);
+  };
 
-        if (produtoEditando) {
-            formData.append('id', produtoEditando.id);
-        }
+  const handleFileChange = (e) => {
+    const file = e?.target?.files?.[0] || null;
 
-        try {
-            const res = await fetch(url, {
-                method: method,
-                body: formData, 
-            });
+    if (file) {
+      // Se havia um preview blob anterior, revoga
+      if (imagemPreview && typeof imagemPreview === "string" && imagemPreview.startsWith("blob:")) {
+        try { URL.revokeObjectURL(imagemPreview); } catch (e) { /* noop */ }
+      }
 
-            if (!res.ok) {
-                const errorData = await res.json().catch(() => ({ message: 'Erro desconhecido.' }));
-                throw new Error(`Erro ao ${produtoEditando ? 'atualizar' : 'adicionar'} produto: ${errorData.message || res.statusText}`);
-            }
+      setImagem(file);
+      const fileURL = URL.createObjectURL(file);
+      setImagemPreview(fileURL);
+    } else {
+      if (imagemPreview && typeof imagemPreview === "string" && imagemPreview.startsWith("blob:")) {
+        try { URL.revokeObjectURL(imagemPreview); } catch (e) { /* noop */ }
+      }
+      setImagem(null);
+      setImagemPreview(null);
+    }
+  };
 
-            console.log(`Produto ${produtoEditando ? 'atualizado' : 'adicionado'} com sucesso!`);
-            fecharPopup();
-            fetchProdutos();
-        } catch (error) {
-            console.error(`Falha ao ${produtoEditando ? 'atualizar' : 'enviar'} produto:`, error);
-            alert(`Não foi possível ${produtoEditando ? 'atualizar' : 'adicionar'} o produto. Detalhe: ${error.message}`);
-        }
-    };
-    
-    const fetchProdutos = async () => {
-        setLoading(true);
-        try {
-            const res = await fetch(`/api/produtos?search=${searchTerm}&category=${activeFilter === 'Todos' ? '' : activeFilter}`);
-            if (!res.ok) {
-                throw new Error('Erro ao buscar produtos');
-            }
-            const data = await res.json();
-            setProdutos(data);
-        } catch (error) {
-            console.error("Falha ao buscar produtos:", error);
-            setProdutos([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-    const handleDeleteClick = (productId) => {
-        setProductToDelete(productId);
-        setIsDeletePopupOpen(true);
-    };
+  const handleSaveProduct = async () => {
+    // Valida campos obrigatórios
+    if (!nome.trim() || !selectedCategoriaId || !valor) {
+      alert("Preencha todos os campos e selecione uma categoria.");
+      return;
+    }
 
-    const handleDeleteConfirm = async () => {
-        if (!productToDelete) return;
-    
-        try {
-            const res = await fetch(`/api/produtos/${productToDelete}`, {
-                method: 'DELETE',
-            });
-    
-            if (!res.ok) {
-                const errorData = await res.json().catch(() => ({ message: 'Erro desconhecido.' }));
-                throw new Error(`Erro ao deletar produto: ${errorData.message || res.statusText}`);
-            }
-    
-            console.log("Produto deletado com sucesso!");
-            setIsDeletePopupOpen(false);
-            setProductToDelete(null);
-            fetchProdutos();
-    
-        } catch (error) {
-            console.error("Falha ao deletar produto:", error);
-            alert(`Não foi possível deletar o produto. Tente novamente. Detalhe: ${error.message}`);
-        }
-    };
+    const valorNumerico = parseFloat(String(valor).replace(',', '.'));
+    if (isNaN(valorNumerico)) {
+      alert('Valor inválido.');
+      return;
+    }
 
-    const handleDeleteCancel = () => {
-        setIsDeletePopupOpen(false);
-        setProductToDelete(null);
-    };
+    if (!produtoEditando && !imagem) {
+      alert("Selecione uma imagem para o novo produto!");
+      return;
+    }
 
-    // --- USE EFFECT ---
-    useEffect(() => {
-        fetchCategorias(); // Buscar categorias na montagem
-    }, []);
+    const method = produtoEditando ? 'PUT' : 'POST';
+    const url = produtoEditando ? `/api/produtos/${produtoEditando.id}` : '/api/produtos';
 
-    useEffect(() => {
-        fetchProdutos();
-    }, [searchTerm, activeFilter, categoriaObjetos]); // Adicionado categoriaObjetos como dependência para recarregar produtos se categorias mudarem
+    const formData = new FormData();
+    formData.append('nome', nome.trim());
+    // envia como número — a API deve aceitar tanto string quanto número, mas garantimos que seja number
+    formData.append('categoriaId', Number(selectedCategoriaId));
+    formData.append('valor', valorNumerico);
+    formData.append('desconto', Number(desconto) || 0);
+    // envia emPromocao como string para evitar ambiguidades com FormData
+    formData.append('emPromocao', emPromocao ? 'true' : 'false');
 
-    const handleFilterClick = (category) => {
-        setActiveFilter(category);
-        setIsFilterPopupOpen(false);
-    };
+    // Imagem: anexa somente se for um File (novo upload)
+    if (imagem instanceof File) {
+      formData.append('imagem', imagem);
+    }
 
-    // --- JSX (RENDERIZAÇÃO) ---
+    if (produtoEditando) {
+      formData.append('id', produtoEditando.id);
+    }
 
-    return (
-        <>
-            {/* BARRA DE NAVEGAÇÃO SUPERIOR */}
-            <div className="top-bar">
-                <a href="/telaPrincipal" className="home-botao">
-                    <img src="/img/home-botao.png" alt="Ícone de Home" style={{ width: '40px', height: '40px' }} />
-                </a>
-                
-                <div className="right-icons">
-                    <a href="telaInfo" className="info-icon">
-                        <img src="/img/info-botao.png" alt="Ícone de Informações" />
-                    </a>
-                    <a href="telaUsuario" className="user-icon">
-                        <img src="/img/usuario-icone-branco.png" alt="Usuário"/>
-                    </a>
-                </div>
+    try {
+      const res = await fetch(url, {
+        method,
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ message: 'Erro desconhecido.' }));
+        throw new Error(errorData.detail || errorData.message || res.statusText);
+      }
+
+      fecharPopup();
+      await fetchProdutos();
+    } catch (error) {
+      console.error(`Falha ao ${produtoEditando ? 'atualizar' : 'adicionar'} produto:`, error);
+      alert(`Não foi possível ${produtoEditando ? 'atualizar' : 'adicionar'} o produto. Detalhe: ${error.message}`);
+    }
+  };
+
+  const fetchProdutos = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (searchTerm) params.append('search', searchTerm);
+      if (activeFilter && activeFilter !== 'Todos') params.append('category', activeFilter);
+
+      const res = await fetch(`/api/produtos?${params.toString()}`);
+      if (!res.ok) throw new Error('Erro ao buscar produtos');
+      const data = await res.json();
+      setProdutos(data || []);
+    } catch (error) {
+      console.error('Falha ao buscar produtos:', error);
+      setProdutos([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteClick = (productId) => {
+    setProductToDelete(productId);
+    setIsDeletePopupOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!productToDelete) return;
+
+    try {
+      const res = await fetch(`/api/produtos/${productToDelete}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ message: 'Erro desconhecido.' }));
+        throw new Error(errorData.message || res.statusText);
+      }
+
+      setIsDeletePopupOpen(false);
+      setProductToDelete(null);
+      await fetchProdutos();
+    } catch (error) {
+      console.error('Falha ao deletar produto:', error);
+      alert(`Não foi possível deletar o produto. Tente novamente. Detalhe: ${error.message}`);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeletePopupOpen(false);
+    setProductToDelete(null);
+  };
+
+  useEffect(() => {
+    fetchCategorias();
+  }, []);
+
+  useEffect(() => {
+    // Recarrega quando searchTerm, filtro ativo ou o conteúdo das categorias mudar
+    fetchProdutos();
+  }, [searchTerm, activeFilter, JSON.stringify(categoriaObjetos)]);
+
+  const handleFilterClick = (category) => {
+    setActiveFilter(category);
+    setIsFilterPopupOpen(false);
+  };
+
+  return (
+    <>
+      <div className="top-bar">
+        <a href="/telaPrincipal" className="home-botao">
+          <img src="/img/home-botao.png" alt="Ícone de Home" style={{ width: '40px', height: '40px' }} />
+        </a>
+
+        <div className="right-icons">
+          <a href="telaInfo" className="info-icon">
+            <img src="/img/info-botao.png" alt="Ícone de Informações" />
+          </a>
+          <a href="telaUsuario" className="user-icon">
+            <img src="/img/usuario-icone-branco.png" alt="Usuário" />
+          </a>
+        </div>
+      </div>
+
+      <div className="main-content">
+        <div className="stock-container">
+          <header className="stock-header">
+            <img src="/img/estoque-icone.png" alt="Ícone de Estoque" />
+            <h1>Gerenciar estoque</h1>
+          </header>
+
+          <FilterAndStatsBar
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            produtosCount={produtos.length}
+            isFilterPopupOpen={isFilterPopupOpen}
+            setIsFilterPopupOpen={setIsFilterPopupOpen}
+            activeFilter={activeFilter}
+            handleFilterClick={handleFilterClick}
+            categoriasFiltro={categoriasFiltro}
+            onAddProduct={abrirPopupAdicionar}
+            onAddCategory={openCategoryPopup}
+          />
+
+          <div className="product-table-container">
+            <div className="product-table-header">
+              <span className="col-checkbox"></span>
+              <span className="col-produto">Produtos</span>
+              <span className="col-categoria">Categoria</span>
+              <span className="col-valor">Valor</span>
+              <span className="col-actions"></span>
             </div>
-            
-            <div className="main-content">
-                <div className="stock-container"> 
-                    <header className="stock-header"> 
-                        <img src="/img/estoque-icone.png" alt="Ícone de Estoque" />
-                        <h1>Gerenciar estoque</h1>
-                    </header>
 
-                    {/* Componente: FilterAndStatsBar */}
-                    <FilterAndStatsBar
-                        searchTerm={searchTerm}
-                        setSearchTerm={setSearchTerm}
-                        produtosCount={produtos.length}
-                        isFilterPopupOpen={isFilterPopupOpen}
-                        setIsFilterPopupOpen={setIsFilterPopupOpen}
-                        activeFilter={activeFilter}
-                        handleFilterClick={handleFilterClick}
-                        categoriasFiltro={categoriasFiltro} // USANDO O ESTADO DINÂMICO
-                        onAddProduct={abrirPopupAdicionar}
-                        onAddCategory={openCategoryPopup} // NOVO PROP PARA O POPUP DE CATEGORIA
-                    />
+            {loading ? (
+              <p>Carregando...</p>
+            ) : produtos.length > 0 ? (
+              <ul className="product-list">
+                {produtos.map((produto) => (
+                  <ProductTableRow key={produto.id} produto={produto} onEdit={abrirPopupEdicao} onDelete={handleDeleteClick} />
+                ))}
+              </ul>
+            ) : (
+              <p className="no-products-message">Nenhum produto encontrado.</p>
+            )}
+          </div>
 
-                    <div className="product-table-container">
-                        <div className="product-table-header">
-                            <span className="col-checkbox"></span>
-                            <span className="col-produto">Produtos</span>
-                            <span className="col-categoria">Categoria</span>
-                            <span className="col-valor">Valor</span>
-                            <span className="col-actions"></span>
-                        </div>
+          {popupAberto && (
+            <ProductFormModal
+              produtoEditando={produtoEditando}
+              onClose={fecharPopup}
+              onSave={handleSaveProduct}
+              nome={nome}
+              setNome={setNome}
+              selectedCategoriaId={selectedCategoriaId}
+              setSelectedCategoriaId={setSelectedCategoriaId}
+              valor={valor}
+              setValor={setValor}
+              imagemPreview={imagemPreview}
+              handleFileChange={handleFileChange}
+              desconto={desconto}
+              setDesconto={setDesconto}
+              emPromocao={emPromocao}
+              setEmPromocao={setEmPromocao}
+              descontosOpcoes={descontosOpcoes}
+              categoriaObjetos={categoriaObjetos}
+            />
+          )}
 
-                        {loading ? (
-                            <p>Carregando...</p>
-                        ) : produtos.length > 0 ? (
-                            <ul className="product-list">
-                                {/* Componente: ProductTableRow */}
-                                {produtos.map(produto => (
-                                    <ProductTableRow
-                                        key={produto.id}
-                                        produto={produto}
-                                        onEdit={abrirPopupEdicao}
-                                        onDelete={handleDeleteClick}
-                                    />
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="no-products-message">Nenhum produto encontrado.</p>
-                        )}
-                    </div>
+          {isDeletePopupOpen && (
+            <ConfirmationModal
+              title="Tem certeza que deseja deletar este produto?"
+              message="Essa ação não pode ser desfeita."
+              onCancel={handleDeleteCancel}
+              onConfirm={handleDeleteConfirm}
+            />
+          )}
 
-                    {/* Componente: ProductFormModal */}
-                    {popupAberto && (
-                        <ProductFormModal
-                            produtoEditando={produtoEditando}
-                            onClose={fecharPopup}
-                            onSave={handleSaveProduct}
-                            nome={nome} setNome={setNome}
-                            categoria={categoria} setCategoria={setCategoria}
-                            valor={valor} setValor={setValor}
-                            imagemPreview={imagemPreview}
-                            handleFileChange={handleFileChange}
-                            desconto={desconto} setDesconto={setDesconto}
-                            emPromocao={emPromocao} setEmPromocao={setEmPromocao}
-                            descontosOpcoes={descontosOpcoes}
-                            categoriaObjetos={categoriaObjetos} // PASSANDO OS OBJETOS DE CATEGORIA
-                        />
-                    )}
-
-                    {/* Componente: ConfirmationModal */}
-                    {isDeletePopupOpen && (
-                        <ConfirmationModal
-                            title="Tem certeza que deseja deletar este produto?"
-                            message="Essa ação não pode ser desfeita."
-                            onCancel={handleDeleteCancel}
-                            onConfirm={handleDeleteConfirm}
-                        />
-                    )}
-
-                    {/* Componente: CategoryFormModal */}
-                    {isCategoryPopupOpen && (
-                        <CategoryFormModal
-                            onClose={closeCategoryPopup}
-                            onSave={handleSaveCategory}
-                            newCategoryName={newCategoryName}
-                            setNewCategoryName={setNewCategoryName}
-                        />
-                    )}
-                </div>
-            </div>
-        </>
-    );
+          {isCategoryPopupOpen && (
+            <CategoryFormModal
+              onClose={closeCategoryPopup}
+              onSave={handleSaveCategory}
+              newCategoryName={newCategoryName}
+              setNewCategoryName={setNewCategoryName}
+              newCategoryImagePreview={newCategoryImagePreview}
+              handleCategoryFileChange={handleCategoryFileChange}
+            />
+          )}
+        </div>
+      </div>
+    </>
+  );
 }
