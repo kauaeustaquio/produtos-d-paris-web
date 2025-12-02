@@ -18,6 +18,7 @@ export default function PaginaLogin() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/telaPrincipal";
 
+  // LOGIN COM CREDENCIAIS
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsLoading(true);
@@ -34,11 +35,11 @@ export default function PaginaLogin() {
         setToast({
           type: "error",
           message:
-            "Não foi possível realizar o login, pois o usuário não possui cadastro. Clique aqui para se cadastrar.",
+            "Não foi possível realizar o login, pois o usuário não possui cadastro.",
         });
       } else if (resultado?.ok) {
         setToast({ type: "success", message: "Login realizado com sucesso!" });
-        setTimeout(() => router.push(callbackUrl), 1000); // aguarda 1s para mostrar toast
+        setTimeout(() => router.push(callbackUrl), 800);
       }
 
       setEmail("");
@@ -46,28 +47,19 @@ export default function PaginaLogin() {
     } catch (error) {
       setToast({
         type: "error",
-        message: "Erro ao tentar fazer login. Tente novamente mais tarde.",
+        message: "Erro ao tentar fazer login. Tente novamente.",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
+  // LOGIN GOOGLE — REDIRECT TRUE
   const handleGoogleLogin = async () => {
     setIsLoading(true);
-    try {
-      const result = await signIn("google", { redirect: false, callbackUrl });
 
-      if (result?.error === "usuario-nao-cadastrado") {
-        setToast({
-          type: "error",
-          message:
-            "Não foi possível realizar o login, pois o usuário não possui cadastro. Clique aqui para se cadastrar.",
-        });
-      } else if (result?.ok) {
-        setToast({ type: "success", message: "Login realizado com sucesso!" });
-        setTimeout(() => router.push(callbackUrl), 1000);
-      }
+    try {
+      await signIn("google", { callbackUrl });
     } catch (error) {
       setToast({
         type: "error",
@@ -84,6 +76,7 @@ export default function PaginaLogin() {
 
   return (
     <>
+      {/* Fonte */}
       <link
         href="https://fonts.googleapis.com/css2?family=Sansation:wght@300;400;700&family=Urbanist:wght@100..900&display=swap"
         rel="stylesheet"
@@ -103,15 +96,14 @@ export default function PaginaLogin() {
         <div className="card login-card">
           <h2 className="titulo">Login</h2>
 
-          {/* LOGIN GOOGLE */}
-          <button type="button" className="button google-btn" onClick={handleGoogleLogin}>
+          {/* GOOGLE */}
+          <button className="button google-btn" onClick={handleGoogleLogin}>
             Continuar com Google
           </button>
 
           <div className="divisor">ou</div>
 
           <form onSubmit={handleSubmit} className="formulario">
-            {/* EMAIL */}
             <div className="form-group">
               <label htmlFor="email" className="label-com-asterisco">
                 E-mail *
@@ -132,7 +124,6 @@ export default function PaginaLogin() {
               </div>
             </div>
 
-            {/* SENHA */}
             <div className="form-group">
               <label htmlFor="senha" className="label-com-asterisco">
                 Senha *
@@ -148,12 +139,15 @@ export default function PaginaLogin() {
                   required
                 />
                 <span className="input-icon" onClick={togglePasswordVisibility}>
-                  {showPassword ? <EyeOff size={20} color="#000" /> : <Eye size={20} color="#000" />}
+                  {showPassword ? (
+                    <EyeOff size={20} color="#000" />
+                  ) : (
+                    <Eye size={20} color="#000" />
+                  )}
                 </span>
               </div>
             </div>
 
-            {/* BOTÃO ENTRAR */}
             <div className="button-group">
               <button type="submit" className="button" disabled={isLoading}>
                 {isLoading ? "Entrando..." : "Entrar"}
