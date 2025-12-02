@@ -7,7 +7,8 @@ export default function FilterAndStatsBar({
     searchTerm, setSearchTerm, produtosCount, 
     isFilterPopupOpen, setIsFilterPopupOpen, 
     activeFilter, handleFilterClick, categoriasFiltro, 
-    onAddProduct 
+    onAddProduct,
+    onAddCategory
 }) {
     return (
         <div className="controls-bar">
@@ -55,10 +56,11 @@ export default function FilterAndStatsBar({
                 )}
             </div>
 
-            <a href="#" className="categories-link">
+            {/* <<< CORRIGIDO: AGORA ABRE O POPUP >>> */}
+            <button className="categories-link" onClick={onAddCategory}>
                 <img src="/img/Categorias.png" alt="Ícone de Categorias" />
                 <span>Categorias</span>
-            </a>
+            </button>
 
             <button className="new-product-btn" onClick={onAddProduct}>
                 <span className="btn-text">Novo produto</span>

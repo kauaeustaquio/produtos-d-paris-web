@@ -12,7 +12,7 @@ export async function POST(req) {
         const nome = formData.get("nome");
         const imagemFile = formData.get("imagem");
 
-        // Validação
+        // 🔎 Validação
         if (!nome || !imagemFile || imagemFile.size === 0) {
             return NextResponse.json(
                 { error: "Nome e imagem da categoria são obrigatórios." },
@@ -20,7 +20,7 @@ export async function POST(req) {
             );
         }
 
-        // Token correto
+        // 🔐 Token correto
         const categoriesToken = process.env.BLOB_CATEGORIES_READ_WRITE_TOKEN;
         if (!categoriesToken) {
             return NextResponse.json(
@@ -29,7 +29,7 @@ export async function POST(req) {
             );
         }
 
-        // Upload no Vercel Blob
+        // 📤 Upload no Vercel Blob
         const blob = await put(`categoria-${Date.now()}-${nome}`, imagemFile, {
             access: "public",
             token: categoriesToken,
@@ -37,7 +37,7 @@ export async function POST(req) {
 
         const imageUrl = blob.url;
 
-        // Inserção no banco
+        // 🗄️ Inserção no banco
         const insert = await db.query(
             `
             INSERT INTO categorias (nome, imagem_url) 

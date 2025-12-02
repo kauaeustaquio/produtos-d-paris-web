@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { CircleX, Search, Trash2, Pencil, CircleCheck } from "lucide-react";
 import "./style.css";
 
+import CategoryPage from "./pageComponents/CategoryPage";
 import ProductTableRow from "./pageComponents/ProductTableRow";
 import ProductFormModal from "./pageComponents/ProductFormModal";
 import ConfirmationModal from "./pageComponents/ConfirmationModal";
@@ -349,18 +350,19 @@ export default function TelaEstoque() {
             <h1>Gerenciar estoque</h1>
           </header>
 
-          <FilterAndStatsBar
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            produtosCount={produtos.length}
-            isFilterPopupOpen={isFilterPopupOpen}
-            setIsFilterPopupOpen={setIsFilterPopupOpen}
-            activeFilter={activeFilter}
-            handleFilterClick={handleFilterClick}
-            categoriasFiltro={categoriasFiltro}
-            onAddProduct={abrirPopupAdicionar}
-            onAddCategory={openCategoryPopup}
-          />
+            <FilterAndStatsBar
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              produtosCount={produtos.length}
+              isFilterPopupOpen={isFilterPopupOpen}
+              setIsFilterPopupOpen={setIsFilterPopupOpen}
+              activeFilter={activeFilter}
+              handleFilterClick={handleFilterClick}
+              categoriasFiltro={categoriasFiltro}
+              onAddProduct={abrirPopupAdicionar}
+              onAddCategory={openCategoryPopup}
+              
+            />
 
           <div className="product-table-container">
             <div className="product-table-header">

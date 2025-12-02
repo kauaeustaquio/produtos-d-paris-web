@@ -1,81 +1,78 @@
-import React, { useRef, useState } from 'react';
-import { CircleX, Upload } from 'lucide-react';
-import './CategoryFormModal.css'; 
+"use client";
 
-export default function CategoryFormModal({ 
-    onClose, 
-    onSave, 
-    newCategoryName, 
-    setNewCategoryName, 
+import React from "react";
+import { CircleX, Upload } from "lucide-react";
+import "./CategoryFormModal.css";
+
+export default function CategoryFormModal({
+    onClose,
+    onSave,
+    newCategoryName,
+    setNewCategoryName,
+    newCategoryImagePreview,
+    handleCategoryFileChange,
 }) {
-    const fileInputRef = useRef(null);
-    const [selectedImage, setSelectedImage] = useState(null);
-
-    const handleNameChange = (e) => {
-        setNewCategoryName(e.target.value);
-    };
-
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setSelectedImage(file);
-        }
-    };
-
-    const handleConfirm = (e) => {
-        e.preventDefault();
-
-        if (!newCategoryName.trim()) {
-            alert("Nome da categoria é obrigatório.");
-            return;
-        }
-
-        if (!selectedImage) {
-            alert("Selecione uma imagem.");
-            return;
-        }
-
-        // envia nome + imagem para o pai
-        onSave({
-            nome: newCategoryName,
-            imagem: selectedImage
-        });
-    };
-
     return (
         <div className="modal-backdrop-category">
             <div className="modal-content-category">
+
+                {/* Botão fechar */}
                 <button onClick={onClose} className="close-button-category">
                     <CircleX size={24} />
                 </button>
-                
-                <h3 className="modal-title-category">Insira/remova uma categoria</h3>
-                
-                <form onSubmit={handleConfirm} className="category-form">
-                    
+
+                <h3 className="modal-title-category">Insira / Remova uma categoria</h3>
+
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        onSave();
+                    }}
+                    className="category-form"
+                >
+                    {/* Upload escondido */}
                     <input
                         type="file"
-                        ref={fileInputRef}
-                        onChange={handleImageChange}
-                        style={{ display: 'none' }}
+                        style={{ display: "none" }}
+                        id="category-image-upload"
                         accept="image/*"
+                        onChange={handleCategoryFileChange}
                     />
 
-                    <div className="image-upload-area" onClick={() => fileInputRef.current.click()}>
+                    {/* Área que abre o input */}
+                    <div
+                        className="image-upload-area"
+                        onClick={() =>
+                            document.getElementById("category-image-upload").click()
+                        }
+                    >
                         <div className="upload-placeholder">
                             <Upload size={48} />
                             <p className="upload-text">
-                                {selectedImage ? selectedImage.name : "Selecione a imagem"}
+                                {newCategoryImagePreview
+                                    ? "Imagem selecionada"
+                                    : "Selecione a imagem"}
                             </p>
                         </div>
+
+                        {newCategoryImagePreview && (
+                            <img
+                                src={newCategoryImagePreview}
+                                className="category-preview-image"
+                                alt="Prévia da categoria"
+                            />
+                        )}
                     </div>
 
-                    <label htmlFor="categoryName" className="label-category">Nome da categoria:</label>
+                    <label htmlFor="categoryName" className="label-category">
+                        Nome da categoria:
+                    </label>
+
                     <input
                         id="categoryName"
                         type="text"
                         value={newCategoryName}
-                        onChange={handleNameChange}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
                         placeholder="Ex: Carros"
                         className="input-category-name"
                     />

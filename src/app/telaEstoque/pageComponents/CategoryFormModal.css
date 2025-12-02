@@ -1,3 +1,13 @@
+.modal-backdrop-category {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999999;
+}
+
 .modal-content-category {
     background: #fff;
     padding: 30px;
@@ -5,22 +15,6 @@
     width: 90%;
     max-width: 400px;
     position: relative;
-    /* TRADUÇÃO DA SOMBRA:
-    - Sombra (Cor Preta, 25% Opacidade): rgba(0, 0, 0, 0.25)
-    - Posição X: 0 (nenhuma)
-    - Posição Y: 5px (Drop Shadow Y 5)
-    - Blur: 100px (Blur 100)
-    - Spread: 20px (SPREAD 20)
-    */
     box-shadow: 0px 5px 100px 20px rgba(0, 0, 0, 0.25);
-    z-index: 1001; /* Garante que o conteúdo fique acima do backdrop */
-}
-
-/* O backdrop (fundo semi-transparente atrás do modal) já cria uma sombra natural para o fundo da página.
-Se você quiser que o efeito seja mais intenso, garanta que o modal-backdrop-category tenha:
-*/
-.modal-backdrop-category {
-    /* ... (Estilos existentes) ... */
-    background-color: rgba(0, 0, 0, 0.5); /* Fundo preto 50% transparente */
-    z-index: 1000;
+    z-index: 1000000;
 }
