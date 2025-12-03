@@ -4,7 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import pool from "@/lib/db";
 
-// --- Função Auxiliar: Busca Usuário no DB ---
+// ---- FUNÇÃO AUXILIAR: BUSCA USUÁRIO NO DB ---- //
 async function getUserByEmail(email) {
   const client = await pool.connect();
   try {
@@ -34,13 +34,13 @@ export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 
   providers: [
-    // LOGIN GOOGLE
+    // ---- LOGIN GOOGLE ---- //
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
 
-    // LOGIN COM EMAIL + SENHA
+    // ---- LOGIN POR EMAIL/SENHA ---- //
     CredentialsProvider({
       name: "Credenciais",
       credentials: {
@@ -68,23 +68,24 @@ export const authOptions = {
   ],
 
   callbacks: {
-    // BLOQUEIA LOGIN GOOGLE SE NÃO ESTIVER CADASTRADO
+    // ---- BLOQUEIA LOGIN GOOGLE SE NÃO ESTIVER NO BD ---- //
     async signIn({ account, profile }) {
       if (account?.provider === "google") {
         const existing = await getUserByEmail(profile.email);
 
         if (!existing) {
           console.log(
-            `Tentativa bloqueada: usuário Google ${profile.email} não encontrado no DB.`
+            `❌ Google Login Bloqueado: ${profile.email} não está cadastrado.`
           );
-          return false; // cai em /telaLogin?error=AccessDenied
+          return false;
         }
       }
       return true;
     },
 
-    // TOKEN JWT
+    // ---- TOKEN JWT ---- //
     async jwt({ token, user, account }) {
+      // 1) LOGIN VIA CREDENCIAIS
       if (user) {
         token.id = user.id;
         token.role = user.role;
@@ -92,37 +93,40 @@ export const authOptions = {
         token.email = user.email;
       }
 
-      if (account?.provider === "google" && !token.role) {
+      // 2) LOGIN VIA GOOGLE
+      if (account?.provider === "google") {
         const existing = await getUserByEmail(token.email);
+
         if (existing) {
           token.id = existing.id;
           token.role = existing.role;
-          token.name = existing.nome;
+          token.name = existing.nome; // garante nome correto
         }
       }
 
       return token;
     },
 
-    // SESSÃO
+    // ---- SESSÃO ---- //
     async session({ session, token }) {
-      if (!session.user) session.user = {};
-
-      session.user.id = token.id;
-      session.user.role = token.role;
-      session.user.name = token.name;
-      session.user.email = token.email;
-
+      session.user = {
+        id: token.id,
+        role: token.role,
+        name: token.name,
+        email: token.email,
+      };
       return session;
     },
 
-    // REDIRECIONAMENTO
+    // ---- REDIRECIONAMENTO ---- //
     async redirect({ url, baseUrl }) {
-      if (url.startsWith(baseUrl)) return url; // Permite callbackUrl (ex: /telaPrincipal)
+      // permite callbackUrl interno automaticamente
+      if (url.startsWith(baseUrl)) return url;
       return baseUrl;
     },
   },
 
+  // ---- PÁGINAS PERSONALIZADAS ---- //
   pages: {
     signIn: "/telaLogin",
     error: "/telaLogin",

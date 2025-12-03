@@ -6,17 +6,15 @@ import { CircleX, Upload } from "lucide-react";
 import { formatarParaBRL, calcularValorComDesconto } from '../utils/formatters';                                                  
 
 export default function ProductFormModal({
-    produtoEditando, onClose, onSave,
-    // Estados do formulário
-    nome, setNome, categoria, setCategoria, valor, setValor, 
-    imagemPreview, handleFileChange,
-    // Estados de desconto
-    desconto, setDesconto, emPromocao, setEmPromocao,
-    descontosOpcoes,
-    // NOVO PROP: Lista de objetos de categoria vinda do TelaEstoque
-    categoriaObjetos 
+    produtoEditando, onClose, onSave,
+    nome, setNome,
+    selectedCategoriaId, setSelectedCategoriaId,
+    valor, setValor,
+    imagemPreview, handleFileChange,
+    desconto, setDesconto, emPromocao, setEmPromocao,
+    descontosOpcoes,
+    categoriaObjetos
 }) {
-    
     // Calcula o novo valor com desconto
     const valorComDesconto = React.useMemo(() => {
         // Se 'valor' for vazio, retorna 0 para evitar erros no cálculo
@@ -26,7 +24,7 @@ export default function ProductFormModal({
 
     // Validação de formulário
     // A validação da categoria deve ser ajustada para aceitar o ID/nome da categoria
-    const isFormValid = nome && categoria && valor; 
+    const isFormValid = nome && selectedCategoriaId && valor; 
     
     const handleDiscountChange = (newDesconto) => {
         const newDesc = parseInt(newDesconto);
@@ -70,26 +68,19 @@ export default function ProductFormModal({
                     />
 
                     <label htmlFor="categoria">Categoria</label>
-                    <select
-                        id="categoria"
-                        value={categoria}
-                        onChange={(e) => setCategoria(e.target.value)}
-                    >
-                        <option value="" disabled>Selecionar...</option>
-                        {/* SUBSTITUIÇÃO DAS OPÇÕES ESTÁTICAS PELAS DINÂMICAS */}
-                        {categoriaObjetos.length > 0 ? (
-                            categoriaObjetos.map(cat => (
-                                // Usamos cat.id no 'value' para enviar a Chave Estrangeira (melhor prática)
-                                // Se o seu backend espera o nome (string), use value={cat.nome}
-                                <option key={cat.id} value={cat.id}> 
+                        <select
+                            id="categoria"
+                            value={String(selectedCategoriaId)}
+                            onChange={(e) => setSelectedCategoriaId(e.target.value)}
+                        >
+                            <option value="" disabled>Selecionar...</option>
+
+                            {categoriaObjetos.map(cat => (
+                                <option key={cat.id} value={String(cat.id)}>
                                     {cat.nome}
                                 </option>
-                            ))
-                        ) : (
-                            <option value="" disabled>Carregando categorias...</option>
-                        )}
-                        {/* REMOVIDO: Opções estáticas de categoria (Casa, Carros, etc.) */}
-                    </select>
+                            ))}
+                        </select>
 
                     <label htmlFor="valor">Valor</label>
                     <input

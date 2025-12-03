@@ -55,20 +55,23 @@ export default function PaginaLogin() {
   };
 
   // LOGIN GOOGLE — REDIRECT TRUE
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
+const handleGoogleLogin = async () => {
+  setIsLoading(true);
 
-    try {
-      await signIn("google", { callbackUrl });
-    } catch (error) {
-      setToast({
-        type: "error",
-        message: "Erro ao tentar fazer login com Google.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  try {
+    await signIn("google", {
+      callbackUrl: `${window.location.origin}/telaPrincipal`,
+    });
+  } catch (error) {
+    setToast({
+      type: "error",
+      message: "Erro ao tentar fazer login com Google.",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);

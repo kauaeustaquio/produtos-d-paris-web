@@ -23,14 +23,14 @@ export async function middleware(req) {
     pathname.startsWith(rota)
   );
 
-  // Se a rota exige auth e não há token → volta para login
+  // Se tentar acessar rota protegida sem estar logado → manda para login
   if (precisaAuth && !token) {
     const url = new URL("/telaLogin", req.url);
-    url.searchParams.set("callbackUrl", pathname);
+    url.searchParams.set("callbackUrl", pathname); 
     return NextResponse.redirect(url);
   }
 
-  // Se logado e tentar abrir telaLogin → manda para telaPrincipal
+  // Se já estiver logado e tentar acessar a página de login, redireciona para Principal
   if (token && pathname === "/telaLogin") {
     return NextResponse.redirect(new URL("/telaPrincipal", req.url));
   }
@@ -38,7 +38,6 @@ export async function middleware(req) {
   return NextResponse.next();
 }
 
-// MIDDLEWARE EXECUTA SOMENTE NAS ROTAS PRIVADAS
 export const config = {
   matcher: [
     "/perfil/:path*",
@@ -49,7 +48,6 @@ export const config = {
     "/telaPedidos/:path*",
     "/telaEstoque/:path*",
     "/telaInfo/:path*",
-    "/admin/:path*",
-    "/telaLogin"
-  ],
+    "/admin/:path*"
+  ]
 };

@@ -378,7 +378,15 @@ export default function TelaEstoque() {
             ) : produtos.length > 0 ? (
               <ul className="product-list">
                 {produtos.map((produto) => (
-                  <ProductTableRow key={produto.id} produto={produto} onEdit={abrirPopupEdicao} onDelete={handleDeleteClick} />
+                  
+                  <ProductTableRow 
+                    key={produto.id} 
+                    produto={produto} 
+                    onEdit={abrirPopupEdicao} 
+                    onDelete={handleDeleteClick}
+                    categorias={categoriaObjetos}
+                 />
+
                 ))}
               </ul>
             ) : (
