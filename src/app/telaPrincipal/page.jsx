@@ -56,7 +56,7 @@ export default async function ProdutosdParis({ searchParams }) {
     const produtosFiltrados = await getProdutos(busca);
 
     const produtosPorCategoria = produtosFiltrados.reduce((acc, produto) => {
-        const categoria = produto.categoria || 'Outros';
+        const categoria = produto.categoria || 'Produtos';
         if (!acc[categoria]) {
             acc[categoria] = [];
         }
