@@ -25,7 +25,7 @@ export async function POST(request) {
 
     // 3. Insere 
     const result = await db.query(
-      'INSERT INTO usuario (nome, email, senha) VALUES ($1, $2, $3) RETURNING *',
+      'INSERT INTO usuario (nome, email, telefone, senha) VALUES ($1, $2, $3) RETURNING *',
       [nome, email, hashedPassword] 
     );
 

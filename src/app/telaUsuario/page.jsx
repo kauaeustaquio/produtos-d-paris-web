@@ -9,6 +9,7 @@ export default async function ProdutosdParis() {
 
   const nomeUsuario = session?.user?.name || "Usuário";
   const emailUsuario = session?.user?.email || "email@exemplo.com";
+  const telefonelUsuario = session?.user?.telefone || "(00) 00000-0000";
 
   return (
     <>
@@ -58,17 +59,9 @@ export default async function ProdutosdParis() {
           </div>
 
           <div className="input-field-container">
-            <label className="input-label">Senha</label>
-            <div className="input-container">
-              <input type="password" value="********" readOnly className="input-field" />
-              <div className="edit-icon-container"><Pencil size={20} color="#666" /></div>
-            </div>
-          </div>
-
-          <div className="input-field-container">
             <label className="input-label">Telefone</label>
             <div className="input-container">
-              <input type="text" value="(83) 99954-0012" readOnly className="input-field" />
+              <input type="text" value={telefonelUsuario} readOnly className="input-field" />
               <div className="edit-icon-container"><Pencil size={20} color="#666" /></div>
             </div>
           </div>

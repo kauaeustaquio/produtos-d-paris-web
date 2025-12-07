@@ -99,13 +99,6 @@ const handleGoogleLogin = async () => {
         <div className="card login-card">
           <h2 className="titulo">Login</h2>
 
-          {/* GOOGLE */}
-          <button className="button google-btn" onClick={handleGoogleLogin}>
-            Continuar com Google
-          </button>
-
-          <div className="divisor">ou</div>
-
           <form onSubmit={handleSubmit} className="formulario">
             <div className="form-group">
               <label htmlFor="email" className="label-com-asterisco">
@@ -156,6 +149,13 @@ const handleGoogleLogin = async () => {
                 {isLoading ? "Entrando..." : "Entrar"}
               </button>
             </div>
+
+            {/* GOOGLE */}
+          <button className="google-btn" onClick={handleGoogleLogin}>
+  <img src="/img\google-logo.png" alt="Google" />
+  Continuar com Google
+</button>
+
 
             <div className="cadastro-link">
               Não tem uma conta? <a href="/telaCadastro">Cadastre-se</a>
