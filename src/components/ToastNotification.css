@@ -1,0 +1,32 @@
+.toast-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 250px;
+  max-width: 400px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  color: white;
+  box-shadow: 0px 5px 15px rgba(0,0,0,0.3);
+  font-family: sans-serif;
+  z-index: 999999;
+  overflow: hidden;
+}
+
+.toast-notification.success {
+  background-color: #4caf50;
+}
+
+.toast-notification.error {
+  background-color: #f44336;
+}
+
+.toast-message {
+  margin-bottom: 8px;
+}
+
+.toast-progress {
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.8);
+  transition: width 0.05s linear;
+}

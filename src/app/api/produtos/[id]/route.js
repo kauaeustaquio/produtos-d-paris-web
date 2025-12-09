@@ -5,10 +5,11 @@ import { put } from "@vercel/blob";
 // ==========================================================
 // FUNÇÃO PUT (Atualiza o produto, usando categoria_id)
 // ==========================================================
-export async function PUT(req, { params }) {
+export async function PUT(req, context) {
     let imageUrl = null;
     
     try {
+        const { params } = await context; // ✅ Aguardando params
         const id = params.id; 
         const formData = await req.formData();
         
@@ -25,43 +26,26 @@ export async function PUT(req, { params }) {
             }, { status: 400 });
         }
 
-        // Token de acesso do Blob específico
         const productsToken = process.env.BLOB_PRODUCTS_READ_WRITE_TOKEN;
-        
         if (!productsToken) {
             return NextResponse.json({ 
                 error: "BLOB_PRODUCTS_READ_WRITE_TOKEN não está definido no ambiente." 
             }, { status: 500 });
         }
 
-        // --------------------------------------------------
-        // LÓGICA DA IMAGEM (CORRIGIDO)
-        // --------------------------------------------------
-        if (imagemFile && typeof imagemFile !== 'string') {
-            if (imagemFile.size > 0) {
-                // 🔥 CORREÇÃO IMPORTANTE: nome único
-                const blob = await put(
-                    `produto-${Date.now()}-${nome}`, 
-                    imagemFile,
-                    { 
-                        access: 'public',
-                        token: productsToken 
-                    }
-                );
-                imageUrl = blob.url;
-            }
-
+        if (imagemFile && typeof imagemFile !== 'string' && imagemFile.size > 0) {
+            const blob = await put(
+                `produto-${Date.now()}-${nome}`, 
+                imagemFile,
+                { access: 'public', token: productsToken }
+            );
+            imageUrl = blob.url;
         } else if (typeof imagemFile === 'string') {
             imageUrl = imagemFile; // mantém URL existente
+        } else {
+            imageUrl = formData.get('imagem') || null;
         }
 
-        if (imageUrl === null) {
-            imageUrl = formData.get('imagem') || null; 
-        }
-
-        // --------------------------------------------------
-        // UPDATE no banco
-        // --------------------------------------------------
         const result = await db.query(
             `UPDATE produtos 
              SET nome = $1, categoria_id = $2, valor = $3, imagem = $4, desconto = $5, em_promocao = $6
@@ -88,15 +72,19 @@ export async function PUT(req, { params }) {
 // ==========================================================
 // FUNÇÃO DELETE 
 // ==========================================================
-export async function DELETE(request, { params }) {
+export async function DELETE(request, context) {
     try {
+        const { params } = await context; // ✅ Aguardando params
         const id = params.id; 
 
         if (!id) {
             return NextResponse.json({ message: "ID do produto não fornecido." }, { status: 400 });
         }
 
-        const result = await db.query("DELETE FROM produtos WHERE id = $1 RETURNING id", [id]);
+        const result = await db.query(
+            "DELETE FROM produtos WHERE id = $1 RETURNING id", 
+            [id]
+        );
 
         if (result.rowCount === 0) {
             return NextResponse.json({ message: "Produto não encontrado para exclusão." }, { status: 404 });
