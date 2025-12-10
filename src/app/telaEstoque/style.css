@@ -188,10 +188,13 @@ button {
     width: 323px; 
     height: 90px; 
     border-radius: 20px; 
-    background-color: #e0e0e0;
+    background-color: #FFFFFF;
     border: none;
     cursor: pointer;
     transition: background-color 0.2s;
+    /* SOMBRA: y=4px, blur=4px, cor 000000, opacidade 5% */
+    box-shadow: 0px 4px 4px rgba(0,0,0,0.10);
+    backdrop-filter: blur(5px);         /* blur aplicado */
 }
 
 .new-product-btn .btn-text {
@@ -202,7 +205,7 @@ button {
 }
 
 .new-product-btn:hover {
-    background-color: #d0d0d0;
+    background-color: #e4e4e4;
 }
 
 .product-table-container {

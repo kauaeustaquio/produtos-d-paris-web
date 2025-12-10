@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Search } from "lucide-react";
+import { Package, Search, Funnel } from "lucide-react";
 
 export default function FilterAndStatsBar({ 
     searchTerm, setSearchTerm, produtosCount, 
@@ -29,7 +29,7 @@ export default function FilterAndStatsBar({
             
             <div className="filter-container">
                 <a href="#" className="filter-link" onClick={() => setIsFilterPopupOpen(true)}>
-                    <img src="/img/Filter.png" alt="Ícone de Filtro" />
+                    <Funnel color="#AAAAAA" size={35} />
                     <span>Filtrar</span>
                 </a>
 
@@ -58,7 +58,7 @@ export default function FilterAndStatsBar({
 
             {/* <<< CORRIGIDO: AGORA ABRE O POPUP >>> */}
             <button className="categories-link" onClick={onAddCategory}>
-                <img src="/img/Categorias.png" alt="Ícone de Categorias" />
+                <Package color="#AAAAAA" size={35} />
                 <span>Categorias</span>
             </button>
 

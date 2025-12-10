@@ -1,3 +1,6 @@
+/* ================================
+   BACKDROP
+================================ */
 .modal-backdrop-category {
     position: fixed;
     inset: 0;
@@ -8,6 +11,9 @@
     z-index: 999999;
 }
 
+/* ================================
+   MODAL
+================================ */
 .modal-content-category {
     background: #fff;
     padding: 30px;
@@ -17,9 +23,16 @@
     position: relative;
     box-shadow: 0px 5px 100px 20px rgba(0, 0, 0, 0.25);
     z-index: 1000000;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
 
-/* Botão fechar */
+/* ================================
+   BOTÃO FECHAR
+================================ */
 .close-button-category {
     position: absolute;
     top: 12px;
@@ -27,9 +40,148 @@
     background: none;
     border: none;
     cursor: pointer;
-    color: #333;
-    z-index: 1000001; /* acima do modal */
+    color: #B3B3B3;
+}
+
+/* ================================
+   TÍTULO
+================================ */
+.modal-title-category {
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    color: #AAAAAA;
+}
+
+/* ================================
+   UPLOAD
+================================ */
+.upload-icon-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: #000;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0 auto 8px auto;
+    overflow: hidden;
+}
+
+/* Imagem com limites máximos corretos */
+.preview-inside-circle {
+    width: 100%;
+    height: 100%;
+    max-width: 100px;
+    max-height: 100px;
+    object-fit: cover;
+}
+
+.upload-text {
+    color: #838383;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+/* ================================
+   LABEL DO INPUT
+================================ */
+.label-category {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #838383;
+    text-align: center;
+    display: block;
+}
+
+/* ================================
+   INPUT
+================================ */
+.input-category-name {
+    width: 50%;
+    background: rgba(0,0,0,0.05); /* 5% transparência */
+    border: none;
+    padding: 12px;
+    border-radius: 50px;
+    font-size: 16px;
+    color: #333;
+    margin-top: 6px;
+    text-align: center;
+
+    box-shadow: 0px 4px 4px rgba(0,0,0,0.05); /* y:4 blur:4 */
+    backdrop-filter: blur(4px);
+}
+
+/* Remover highlight azul e bordas no foco */
+.input-category-name:focus {
+    outline: none !important;
+    border: none !important;
+    background: rgba(0,0,0,0.05);
+    box-shadow: 0px 4px 4px rgba(0,0,0,0.05);
+}
+
+/* Placeholder */
+.input-category-name::placeholder {
+    color: #AAAAAA;
+    text-align: center;
+}
+
+/* ================================
+   BOTÃO CONFIRMAR
+================================ */
+.confirm-button-category {
+    width: 100%;
+    background-color: #D9D9D9;
+    color: #838383;
+    padding: 12px;
+    margin-top: 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    transition: 0.15s ease-in-out;
+}
+
+/* Ícone normal */
+.confirm-button-category svg {
+    color: #838383;
+}
+
+/* Hover */
+.confirm-button-category:hover {
+    background-color: #333;
+    color: #fff;
+}
+
+.confirm-button-category:hover svg {
+    color: #fff;
+}
+
+/* Active → ícone some */
+.confirm-button-category:active svg {
+    opacity: 0;
+}
+
+/* ================================
+   MODO DELETAR
+================================ */
+.confirm-button-category.delete-mode {
+    background-color: #D9D9D9;
+    color: #838383;
+}
+
+.confirm-button-category.delete-mode:hover {
+    background-color: #333;
+    color: #fff;
+}
+
+.confirm-button-category.delete-mode:hover svg {
+    color: #fff;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { CircleX, Upload, Trash2, CircleCheck } from "lucide-react";
+import { CircleX, Upload, Trash2 } from "lucide-react";
 import ToastNotification from "@/components/ToastNotification";
 import "./CategoryFormModal.css";
 
@@ -21,7 +21,7 @@ export default function CategoryFormModal({
 
     const handleSaveClick = async () => {
         try {
-            const result = await onSave(); // onSave deve retornar JSON da API
+            const result = await onSave();
 
             if (result?.error) {
                 setToastType("error");
@@ -31,6 +31,8 @@ export default function CategoryFormModal({
 
             setToastType("success");
             setToastMessage("Categoria salva com sucesso!");
+
+            onClose(); // fecha modal
         } catch (err) {
             setToastType("error");
             setToastMessage(err?.message || "Erro ao salvar categoria!");
@@ -39,7 +41,7 @@ export default function CategoryFormModal({
 
     const handleDeleteClick = async () => {
         try {
-            const result = await onDelete(newCategoryName); // onDelete deve retornar JSON da API
+            const result = await onDelete(newCategoryName);
 
             if (result?.error) {
                 setToastType("error");
@@ -49,6 +51,8 @@ export default function CategoryFormModal({
 
             setToastType("success");
             setToastMessage("Categoria removida com sucesso!");
+
+            onClose(); // fecha modal
         } catch (err) {
             setToastType("error");
             setToastMessage(err?.message || "Erro ao remover categoria!");
@@ -66,7 +70,7 @@ export default function CategoryFormModal({
                     </button>
 
                     <h3 className="modal-title-category">
-                        {mode === "add" ? "Adicionar categoria" : "Remover categoria"}
+                        Insira/remova uma categoria
                     </h3>
 
                     {/* MODO ADICIONAR */}
@@ -78,6 +82,7 @@ export default function CategoryFormModal({
                             }}
                             className="category-form"
                         >
+                            {/* Input hidden para upload */}
                             <input
                                 type="file"
                                 style={{ display: "none" }}
@@ -86,6 +91,7 @@ export default function CategoryFormModal({
                                 onChange={handleCategoryFileChange}
                             />
 
+                            {/* Área de upload */}
                             <div
                                 className="image-upload-area"
                                 onClick={() =>
@@ -93,27 +99,34 @@ export default function CategoryFormModal({
                                 }
                             >
                                 <div className="upload-placeholder">
-                                    <Upload size={48} />
+                                    <div className="upload-icon-circle">
+                                        {!newCategoryImagePreview && (
+                                            <Upload size={50} color="#FFFFFF" />
+                                        )}
+
+                                        {newCategoryImagePreview && (
+                                            <img
+                                                src={newCategoryImagePreview}
+                                                alt="Preview"
+                                                className="preview-inside-circle"
+                                            />
+                                        )}
+                                    </div>
+
                                     <p className="upload-text">
                                         {newCategoryImagePreview
                                             ? "Imagem selecionada"
-                                            : "Selecione a imagem"}
+                                            : "Selecione a imagem somente para adição"}
                                     </p>
                                 </div>
-
-                                {newCategoryImagePreview && (
-                                    <img
-                                        src={newCategoryImagePreview}
-                                        className="category-preview-image"
-                                        alt="Prévia da categoria"
-                                    />
-                                )}
                             </div>
 
+                            {/* LABEL */}
                             <label htmlFor="categoryName" className="label-category">
                                 Nome da categoria:
                             </label>
 
+                            {/* INPUT */}
                             <input
                                 id="categoryName"
                                 type="text"
@@ -123,8 +136,9 @@ export default function CategoryFormModal({
                                 className="input-category-name"
                             />
 
+                            {/* BOTÃO */}
                             <button type="submit" className="confirm-button-category">
-                                <CircleCheck size={18} /> Confirmar
+                                Confirmar
                             </button>
                         </form>
                     )}
@@ -166,7 +180,6 @@ export default function CategoryFormModal({
                 </div>
             </div>
 
-            {/* Toast notification */}
             <ToastNotification type={toastType} message={toastMessage} />
         </>
     );
