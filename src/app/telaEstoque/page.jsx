@@ -202,45 +202,52 @@ export default function TelaEstoque() {
   };
 
   // --- PRODUTOS ---
-  const handleSaveProduct = async () => {
-    if (!nome.trim() || !selectedCategoriaId || !valor) {
-      alert("Preencha todos os campos e selecione uma categoria.");
-      return;
+ const handleSaveProduct = async () => {
+  if (!nome.trim() || !selectedCategoriaId || !valor) {
+    alert("Preencha todos os campos e selecione uma categoria.");
+    return;
+  }
+  const valorNumerico = parseFloat(String(valor).replace(',', '.'));
+  if (isNaN(valorNumerico)) {
+    alert('Valor inválido.');
+    return;
+  }
+  if (!produtoEditando && !imagem) {
+    alert("Selecione uma imagem para o novo produto!");
+    return;
+  }
+
+  const method = produtoEditando ? 'PUT' : 'POST';
+  const url = produtoEditando ? `/api/produtos/${produtoEditando.id}` : '/api/produtos';
+  
+  const formData = new FormData();
+  formData.append('nome', nome.trim());
+  formData.append('categoriaId', Number(selectedCategoriaId));
+  formData.append('valor', valorNumerico);
+  let quantidadeFinal = produtoEditando ? (Number(produtoEditando.quantidade) || 0) + (Number(quantidade) || 0) : Number(quantidade) || 0;
+  formData.append('quantidade', quantidadeFinal);
+  formData.append('desconto', Number(desconto) || 0);
+  formData.append('emPromocao', emPromocao ? 'true' : 'false');
+
+  // Verifica se a imagem é do tipo File e anexa ao FormData
+  if (imagem instanceof File) formData.append('imagem', imagem);
+  
+  if (produtoEditando) formData.append('id', produtoEditando.id);
+
+  try {
+    const res = await fetch(url, { method, body: formData });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ message: 'Erro desconhecido.' }));
+      throw new Error(errorData.detail || errorData.message || res.statusText);
     }
-    const valorNumerico = parseFloat(String(valor).replace(',', '.'));
-    if (isNaN(valorNumerico)) {
-      alert('Valor inválido.');
-      return;
-    }
-    if (!produtoEditando && !imagem) {
-      alert("Selecione uma imagem para o novo produto!");
-      return;
-    }
-    const method = produtoEditando ? 'PUT' : 'POST';
-    const url = produtoEditando ? `/api/produtos/${produtoEditando.id}` : '/api/produtos';
-    const formData = new FormData();
-    formData.append('nome', nome.trim());
-    formData.append('categoriaId', Number(selectedCategoriaId));
-    formData.append('valor', valorNumerico);
-    let quantidadeFinal = produtoEditando ? (Number(produtoEditando.quantidade) || 0) + (Number(quantidade) || 0) : Number(quantidade) || 0;
-    formData.append('quantidade', quantidadeFinal);
-    formData.append('desconto', Number(desconto) || 0);
-    formData.append('emPromocao', emPromocao ? 'true' : 'false');
-    if (imagem instanceof File) formData.append('imagem', imagem);
-    if (produtoEditando) formData.append('id', produtoEditando.id);
-    try {
-      const res = await fetch(url, { method, body: formData });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ message: 'Erro desconhecido.' }));
-        throw new Error(errorData.detail || errorData.message || res.statusText);
-      }
-      fecharPopup();
-      await fetchProdutos();
-    } catch (error) {
-      console.error(`Falha ao ${produtoEditando ? 'atualizar' : 'adicionar'} produto:`, error);
-      alert(`Não foi possível ${produtoEditando ? 'atualizar' : 'adicionar'} o produto. Detalhe: ${error.message}`);
-    }
-  };
+    fecharPopup();
+    await fetchProdutos();
+  } catch (error) {
+    console.error(`Falha ao ${produtoEditando ? 'atualizar' : 'adicionar'} produto:`, error);
+    alert(`Não foi possível ${produtoEditando ? 'atualizar' : 'adicionar'} o produto. Detalhe: ${error.message}`);
+  }
+};
+
 
   const fetchProdutos = async () => {
     setLoading(true);
