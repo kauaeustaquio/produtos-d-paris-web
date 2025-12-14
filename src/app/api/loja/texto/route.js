@@ -1,52 +1,65 @@
-// app/api/loja/texto/route.js
-import { NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
+import db from "@/lib/db";
+import { NextResponse } from "next/server";
 
-const configPath = path.join(process.cwd(), 'config', 'store_info.json');
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneRegex = /^\(\d{2}\) \d{4,5}-\d{4}$/;
 
-export async function POST(request) {
-  const allowedFields = ['aboutText', 'location', 'contact'];
-  let field = null;
-  let value = null;
-
+export async function POST(req) {
   try {
-    const body = await request.json();
-    field = body.field;
-    value = body.value;
+    const { field, value } = await req.json();
 
-    if (!field || !value || !allowedFields.includes(field)) {
-      return NextResponse.json({ error: 'Campos inválidos ou campo desconhecido' }, { status: 400 });
+    if (field === "aboutText") {
+      await db.query(
+        "UPDATE store_config SET main_activity = $1 WHERE id = 1",
+        [value]
+      );
     }
 
-    const configData = await fs.readFile(configPath, 'utf-8');
-    const config = JSON.parse(configData);
-
-    let newValue;
-    
-    if (field === 'aboutText') {
-      // O valor é uma string simples de texto
-      newValue = value;
-    } else if (field === 'location' || field === 'contact') {
-      // O valor deve ser um objeto JSON (enviado como string)
-      newValue = JSON.parse(value);
-    } 
-    
-    config[field] = newValue;
-
-    // Escreve os dados atualizados no arquivo
-    await fs.writeFile(configPath, JSON.stringify(config, null, 2));
-
-    // Retorna o valor atualizado (como objeto se for location/contact)
-    return NextResponse.json({ success: true, value: newValue });
-    
-  } catch (error) {
-    // Captura erros de parsing JSON ou outros erros de servidor
-    if (error instanceof SyntaxError && (field === 'location' || field === 'contact')) {
-        console.error('Erro ao parsear JSON:', error);
-        return NextResponse.json({ error: 'Formato JSON inválido para Localização/Contato. Use aspas duplas.' }, { status: 400 });
+    if (field === "location") {
+      const loc = JSON.parse(value);
+      await db.query(
+        `UPDATE store_config
+         SET address_street = $1,
+             address_city = $2,
+             address_cep = $3
+         WHERE id = 1`,
+        [loc.street, loc.city_state, loc.zip]
+      );
     }
-    console.error('Erro ao salvar o texto:', error);
-    return NextResponse.json({ error: 'Erro interno no servidor' }, { status: 500 });
+
+    if (field === "contact") {
+      const c = JSON.parse(value);
+
+      if (!emailRegex.test(c.email)) {
+        return NextResponse.json(
+          { error: "Email inválido" },
+          { status: 400 }
+        );
+      }
+
+      if (!phoneRegex.test(c.phone1)) {
+        return NextResponse.json(
+          { error: "Telefone inválido. Use (99) 99999-9999" },
+          { status: 400 }
+        );
+      }
+
+      await db.query(
+        `UPDATE store_config
+         SET phone_main = $1,
+             phone_secondary = $2,
+             email = $3
+         WHERE id = 1`,
+        [c.phone1, c.phone2, c.email]
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json(
+      { error: "Erro ao salvar dados" },
+      { status: 500 }
+    );
   }
 }

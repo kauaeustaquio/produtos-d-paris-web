@@ -1,27 +1,34 @@
-// app/api/loja/route.js
-import { NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
-
-// Localiza o arquivo de configuração da loja
-const configPath = path.join(process.cwd(), 'config', 'store_info.json');
+import db from "@/lib/db";
+import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    // Lê o conteúdo do arquivo JSON
-    const configData = await fs.readFile(configPath, 'utf-8');
-    const config = JSON.parse(configData);
-    
-    // Retorna os dados da loja
-    return NextResponse.json(config);
-  } catch (error) {
-    console.error("Erro ao ler os dados da loja:", error);
-    // Retorna a logo padrão caso falhe
-    return NextResponse.json({ 
-        logo_url: "/img/logo-loja-info.png", 
-        aboutText: "Erro ao carregar os dados da loja.",
-        location: {},
-        contact: {}
-    }, { status: 500 });
+    const { rows } = await db.query(
+      "SELECT * FROM store_config WHERE id = 1"
+    );
+
+    const store = rows[0];
+
+    return NextResponse.json({
+      company_name: store.company_name,
+      aboutText: store.main_activity,
+      location: {
+        street: store.address_street,
+        city_state: store.address_city,
+        zip: store.address_cep,
+      },
+      contact: {
+        phone1: store.phone_main,
+        phone2: store.phone_secondary,
+        email: store.email,
+      },
+      logo_url: store.logo_url,
+    });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json(
+      { error: "Erro ao buscar dados da loja" },
+      { status: 500 }
+    );
   }
 }

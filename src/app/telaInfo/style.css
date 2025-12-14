@@ -3,6 +3,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500&display=swap');
 
+
 /* Estilizando o body e o html para garantir a altura mínima e remover margens padrão */
 html, body {
     margin: 0;
@@ -354,4 +355,10 @@ html, body {
         margin: 10px 0;
         min-width: unset;
     }
+}
+
+.titulo-confirmacao {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
 }
