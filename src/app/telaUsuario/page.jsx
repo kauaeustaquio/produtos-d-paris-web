@@ -23,7 +23,7 @@ export default async function ProdutosdParis() {
 
       <div className="black-bar">
         <div className="owner-profile">
-          <a href="/telaPropietario" className="owner-icon">
+          <a href="/telaUsuario" className="owner-icon">
             <img src="/img/propietario-icon.png" alt="Ícone do Proprietário" />
           </a>
         </div>
