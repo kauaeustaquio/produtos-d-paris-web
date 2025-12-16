@@ -472,3 +472,22 @@ button {
     background-color: #DCDCDC;
     color: #888888;
 }
+
+.sort-header {
+  display: inline-flex; /* não ocupa a coluna inteira */
+  align-items: center;
+  gap: 4px; /* bem justinho */
+  white-space: nowrap; /* não quebra linha */
+}
+
+.sort-icon {
+  cursor: pointer;
+  font-weight: 600;
+  user-select: none;
+  font-size: 0.7rem;
+  color: #666;
+}
+
+.sort-icon:hover {
+  opacity: 0.7;
+}
