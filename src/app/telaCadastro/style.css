@@ -14,7 +14,7 @@
 /* Estilizando o card de cadastro */
 .card {
     width: 476px;
-    height: 500px;
+    height: 580px;
     background-color: #ffffff;
     border-radius: 50px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -24,17 +24,13 @@
     align-items: center;
 }
 
-/* Aplicando a fonte ao título */
 .titulo {
     text-align: center;
     font-size: 2.5rem;
-    /* Altera o peso da fonte para a versão mais fina, como 200 (extra-light) ou 100 (thin) */
     font-weight: 100; 
-    color: #444;
+    color: #000; /* Cor do título alterada para preto */
     font-family: 'Urbanist', sans-serif;
-    margin: 0;
-    margin-top: 5px; 
-    margin-bottom: 5px;
+    margin: 10px 0 30px 0; /* Ajuste as margens do título */
 }
 
 /* Estilizando a linha divisória */
@@ -127,6 +123,9 @@
 
 /* Estilo para o link de login */
 .login-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-top: 15px;
     font-size: 0.9rem;
     text-decoration: underline;
@@ -140,4 +139,87 @@
     color: #000;
     text-decoration: underline;
     font-weight: bold;
+}
+
+.login-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 200px;
+}
+
+.logo-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast.top {
+  top: 16px;
+  bottom: auto;
+}
+
+.logo-login {
+  width: 300px;
+}
+
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+}
+
+.toast {
+  background: #000;
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 12px;
+  min-width: 260px;
+  max-width: 90vw;
+  text-align: center;
+  font-size: 14px;
+  opacity: 0;
+  animation: fadeInOut 7s forwards;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Barra de progresso */
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: #fff;
+  width: 100%;
+  animation: progress linear forwards;
+}
+
+/* Fade in + fade out */
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
 }

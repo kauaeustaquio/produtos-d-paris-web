@@ -18,7 +18,6 @@ export default function PaginaLogin() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/telaPrincipal";
 
-  // LOGIN COM CREDENCIAIS
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsLoading(true);
@@ -44,7 +43,7 @@ export default function PaginaLogin() {
 
       setEmail("");
       setSenha("");
-    } catch (error) {
+    } catch {
       setToast({
         type: "error",
         message: "Erro ao tentar fazer login. Tente novamente.",
@@ -54,38 +53,30 @@ export default function PaginaLogin() {
     }
   };
 
-  // LOGIN GOOGLE — REDIRECT TRUE
-const handleGoogleLogin = async () => {
-  setIsLoading(true);
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
 
-  try {
-    await signIn("google", {
-      callbackUrl: `${window.location.origin}/telaPrincipal`,
-    });
-  } catch (error) {
-    setToast({
-      type: "error",
-      message: "Erro ao tentar fazer login com Google.",
-    });
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+    try {
+      await signIn("google", {
+        callbackUrl: `${window.location.origin}/telaPrincipal`,
+      });
+    } catch {
+      setToast({
+        type: "error",
+        message: "Erro ao tentar fazer login com Google.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <>
-      {/* Fonte */}
       <link
         href="https://fonts.googleapis.com/css2?family=Sansation:wght@300;400;700&family=Urbanist:wght@100..900&display=swap"
         rel="stylesheet"
       />
 
-      {/* ALERT GLOBAL */}
       {toast && (
         <AlertMessage
           type={toast.type}
@@ -96,75 +87,94 @@ const handleGoogleLogin = async () => {
       )}
 
       <div className="container">
-        <div className="card login-card">
-          <h2 className="titulo">Login</h2>
+        <div className="login-wrapper">
 
-          <form onSubmit={handleSubmit} className="formulario">
-            <div className="form-group">
-              <label htmlFor="email" className="label-com-asterisco">
-                E-mail *
-              </label>
-              <div className="input-icon-container">
-                <input
-                  type="email"
-                  id="email"
-                  className="input-field"
-                  placeholder="Insira seu e-mail"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <span className="input-icon">
-                  <Mail size={20} color="#000" />
-                </span>
+          {/* LOGO – FORA DO CARD */}
+          <div className="logo-side">
+            <img
+              src="/img/logoCadastroeLogin.svg"
+              alt="Logo"
+              className="logo-login"
+            />
+          </div>
+
+          {/* CARD DE LOGIN */}
+          <div className="card login-card">
+            <h2 className="titulo">Login</h2>
+
+            <form onSubmit={handleSubmit} className="formulario">
+              <div className="form-group">
+                <label htmlFor="email" className="label-com-asterisco">
+                  E-mail *
+                </label>
+                <div className="input-icon-container">
+                  <input
+                    type="email"
+                    id="email"
+                    className="input-field"
+                    placeholder="Insira seu e-mail"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                  <span className="input-icon">
+                    <Mail size={20} color="#000" />
+                  </span>
+                </div>
               </div>
-            </div>
 
-            <div className="form-group">
-              <label htmlFor="senha" className="label-com-asterisco">
-                Senha *
-              </label>
-              <div className="input-icon-container">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  id="senha"
-                  className="input-field"
-                  placeholder="Insira sua senha"
-                  value={senha}
-                  onChange={(e) => setSenha(e.target.value)}
-                  required
-                />
-                <span className="input-icon" onClick={togglePasswordVisibility}>
-                  {showPassword ? (
-                    <EyeOff size={20} color="#000" />
-                  ) : (
-                    <Eye size={20} color="#000" />
-                  )}
-                </span>
+              <div className="form-group">
+                <label htmlFor="senha" className="label-com-asterisco">
+                  Senha *
+                </label>
+                <div className="input-icon-container">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="senha"
+                    className="input-field"
+                    placeholder="Insira sua senha"
+                    value={senha}
+                    onChange={(e) => setSenha(e.target.value)}
+                    required
+                  />
+                  <span
+                    className="input-icon"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff size={20} color="#000" />
+                    ) : (
+                      <Eye size={20} color="#000" />
+                    )}
+                  </span>
+                </div>
               </div>
-            </div>
 
-            <div className="button-group">
-              <button type="submit" className="button" disabled={isLoading}>
-                {isLoading ? "Entrando..." : "Entrar"}
+              <div className="button-group">
+                <button type="submit" className="button" disabled={isLoading}>
+                  {isLoading ? "Entrando..." : "Entrar"}
+                </button>
+              </div>
+
+              <button
+                type="button"
+                className="google-btn"
+                onClick={handleGoogleLogin}
+              >
+                <img src="/img/google-logo.png" alt="Google" />
+                Continuar com Google
               </button>
-            </div>
 
-            {/* GOOGLE */}
-          <button className="google-btn" onClick={handleGoogleLogin}>
-  <img src="/img\google-logo.png" alt="Google" />
-  Continuar com Google
-</button>
+              <div className="cadastro-link">
+                Não tem uma conta? <a href="/telaCadastro">Cadastre-se</a>
+              </div>
 
+              <div className="forgot-password-link">
+                <a href="/esqueci-senha">Esqueci minha senha</a>
+              </div>
+            </form>
+          </div>
 
-            <div className="cadastro-link">
-              Não tem uma conta? <a href="/telaCadastro">Cadastre-se</a>
-            </div>
-
-            <div className="forgot-password-link">
-              <a href="/esqueci-senha">Esqueci minha senha</a>
-            </div>
-          </form>
         </div>
       </div>
     </>

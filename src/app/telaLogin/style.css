@@ -215,3 +215,20 @@
 .forgot-password-link a:hover {
     text-decoration: underline;
 }
+
+.login-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 200px;
+  
+}
+
+.logo-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-login {
+  width: 400px;
+}
